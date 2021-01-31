@@ -1,0 +1,31 @@
+{
+  "name": "@singular/cli",
+  "version": "1.0.0-prealpha",
+  "description": "Singular framework command line interface for project management",
+  "main": "bin/sg.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/singularframework/cli.git"
+  },
+  "keywords": [
+    "singular",
+    "framework",
+    "nodejs",
+    "node",
+    "typescript",
+    "backend",
+    "server",
+    "express",
+    "http",
+    "cli"
+  ],
+  "author": "Ramtin Soltani <ramtin@chiselpowered.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/singularframework/cli/issues"
+  },
+  "homepage": "https://github.com/singularframework/cli#readme"
+}
