@@ -1,0 +1,71 @@
+import app from 'argumental';
+import path from 'path';
+import fs from 'fs-extra';
+import http from 'http';
+import { spawn } from '../common/child-process';
+import { loadSingularJson } from '../common/events';
+import { SgData } from '../common/models';
+
+app
+.command('docs', 'builds the TypeDoc documentation from source code')
+
+.option('-s --serve', 'serves the documentation')
+.option('-p --port <number>', 'specifies the port number to serve the documentation on')
+.default(6001)
+
+.on('validators:before', loadSingularJson)
+
+.actionDestruct(async ({ opts }) => {
+
+  // Clean up
+  await fs.remove(path.resolve(app.data<SgData>().projectRoot, 'docs'));
+
+  // Build the documentation
+  await spawn(
+    // Syntax: node <path_to_typedoc> --out <path_to_docs_dir> <path_to_src_dir>
+    'node',
+    [
+      path.join('..', 'node_modules', 'typedoc', 'bin', 'typedoc'),
+      '--out',
+      path.join('..', 'docs'),
+      '.'
+    ],
+    {
+      windowsHide: true,
+      cwd: path.join(app.data<SgData>().projectRoot, 'src'),
+      stdio: 'inherit'
+    }
+  );
+
+  console.log('Documentation was built');
+
+  // Serve if asked
+  if ( ! opts.serve ) return;
+
+  http.createServer((req, res) => {
+
+    fs.readFile(path.join(app.data<SgData>().projectRoot, 'docs', req.url === '/' ? '/index.html' : req.url), (error, data) => {
+
+      if ( error ) {
+
+        res.writeHead(404);
+        res.end(JSON.stringify(error));
+
+        return;
+
+      }
+
+      res.writeHead(200);
+      res.end(data);
+
+    });
+
+  })
+  .listen(opts.port)
+  .on('listening', () => {
+
+    console.log(`Documentation is being served on localhost:${opts.port}`);
+
+  });
+
+});

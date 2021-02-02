@@ -12,6 +12,7 @@ import './commands/generate-interceptor';
 import './commands/generate-plugin';
 import './commands/add-assets';
 import './commands/remove-assets';
+import './commands/docs';
 
 // Set version globally
 app.data<SgData>().version = require(path.resolve(__dirname, '..', 'package.json')).version;
