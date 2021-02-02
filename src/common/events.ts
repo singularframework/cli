@@ -4,6 +4,9 @@ import { SgData } from './models';
 import path from 'path';
 import fs from 'fs-extra';
 
+/** Looks for singular.json file in the current working directory.
+  * If not found, will traverse backwards one directory level at a time until reaching root directory or finding the file.
+  * If file is found, the content is loaded into app data's `singular` node, otherwise it would be `null`. */
 export const loadSingularJson: Argumental.EventHandler<Argumental.EventData<any>> = async () => {
 
   let currentDir = process.cwd();
@@ -35,5 +38,18 @@ export const loadSingularJson: Argumental.EventHandler<Argumental.EventData<any>
     }
 
   }
+
+};
+
+/** Saves the `singular` node from app data (if not `null`) into singular.json file. */
+export const saveSingularJson: Argumental.EventHandler<Argumental.EventData<any>> = async () => {
+
+  if ( ! app.data<SgData>().singular ) return;
+
+  await fs.writeJson(
+    path.resolve(app.data<SgData>().projectRoot, 'singular.json'),
+    app.data<SgData>().singular,
+    { spaces: 2 }
+  );
 
 };

@@ -1,0 +1,40 @@
+import app from 'argumental';
+import { loadSingularJson, saveSingularJson } from '../common/events';
+import { SgData } from '../common/models';
+
+app
+.command('remove assets', 'removes previously registered asset paths')
+.alias('r a')
+
+.argument('<...paths>', 'a list of paths to an asset file or directory, relative to "src"')
+
+// Find and load singular.json
+.on('validators:before', loadSingularJson)
+
+.action(async args => {
+
+  if ( ! app.data<SgData>().singular.project.assets )
+    app.data<SgData>().singular.project.assets = [];
+
+  for ( const path of args.paths ) {
+
+    const index = app.data<SgData>().singular.project.assets.indexOf(path);
+
+    if ( index > -1 ) {
+
+      app.data<SgData>().singular.project.assets.splice(index, 1);
+
+    }
+    else {
+
+      console.log(`Path "${path}" is not registered!`);
+
+    }
+
+  }
+
+  console.log('Assets are unregistered');
+
+})
+
+.on('actions:after', saveSingularJson);

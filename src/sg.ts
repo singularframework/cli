@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import 'source-map-support';
+import 'source-map-support/register';
 import app from 'argumental';
 import path from 'path';
 
@@ -10,6 +10,8 @@ import './commands/generate-service';
 import './commands/generate-router';
 import './commands/generate-interceptor';
 import './commands/generate-plugin';
+import './commands/add-assets';
+import './commands/remove-assets';
 
 // Set version globally
 app.data<SgData>().version = require(path.resolve(__dirname, '..', 'package.json')).version;
