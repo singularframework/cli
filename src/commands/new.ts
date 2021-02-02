@@ -3,9 +3,9 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'lodash';
 import { spawn } from '../common/child-process';
-import chalk from 'chalk';
 import mustache from 'mustache';
 import { pathDoesntExist } from '../common/validators';
+import { SgData } from '../common/models';
 
 app
 .command('new', 'creates a new Singular project')
@@ -29,6 +29,18 @@ app
   console.log(`Creating project directory...`);
 
   await fs.ensureDir(path.resolve(process.cwd(), args.name));
+
+  // Generate singular.json
+  await fs.writeJson(path.resolve(process.cwd(), args.name, 'singular.json'), {
+    cli: app.data<SgData>().version,
+    project: {
+      name: args.name,
+      tests: ! opts.skipTests,
+      docs: ! opts.skipDocs,
+      flat: opts.flat,
+      assets: []
+    }
+  }, { spaces: 2 });
 
   // Generate src
   console.log('Scaffolding project...');
@@ -81,7 +93,7 @@ app
     const response = await spawn('npm', ['install'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: 'ignore'
+      stdio: 'inherit'
     });
 
     if ( response.code !== 0 ) throw new Error(`Could not create project due to an error!`);
@@ -97,7 +109,7 @@ app
     const initResponse = await spawn('git', ['init'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: ['ignore', 'ignore', 'inherit']
+      stdio: 'inherit'
     });
 
     if ( initResponse.code !== 0 ) throw new Error(`Could not create project due to an error!`);
@@ -112,7 +124,7 @@ app
     const addResponse = await spawn('git', ['add', '.'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: ['ignore', 'ignore', 'inherit']
+      stdio: 'inherit'
     });
 
     if ( addResponse.code !== 0 ) throw new Error(`Could not create project due to an error!`);
@@ -120,7 +132,7 @@ app
     const commitResponse = await spawn('git', ['commit', '-m', '"Singular commit"'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: ['ignore', 'ignore', 'inherit']
+      stdio: 'inherit'
     });
 
     if ( commitResponse.code !== 0 ) throw new Error(`Could not create project due to an error!`);
