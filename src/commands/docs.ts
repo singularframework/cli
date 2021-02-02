@@ -17,6 +17,14 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
+  // If docs is disabled
+  if ( ! app.data<SgData>().singular.project.docs ) {
+
+    console.log('TypeDoc is disabled on this project!');
+    return;
+
+  }
+
   // Clean up
   await fs.remove(path.resolve(app.data<SgData>().projectRoot, 'docs'));
 

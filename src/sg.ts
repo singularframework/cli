@@ -6,6 +6,7 @@ import path from 'path';
 import { SgData } from './common/models';
 
 import './commands/new';
+import './commands/build';
 import './commands/generate-service';
 import './commands/generate-router';
 import './commands/generate-interceptor';
