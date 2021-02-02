@@ -1,0 +1,16 @@
+import {
+  Interceptor,
+  OnInterception,
+  Request,
+  Response
+} from '@singular/core';
+
+@Interceptor({
+  name: '{{componentName}}',
+  intercepts: 'all'
+})
+export class {{componentNameCamelCased}}Interceptor implements OnInterception {
+
+  onInterception(body: any, req: Request, res: Response): any { }
+
+}

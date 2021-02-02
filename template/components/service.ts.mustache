@@ -1,0 +1,26 @@
+import {
+  Service,
+  OnInjection,
+  OnConfig,
+  OnInit,
+  ServerConfig
+} from '@singular/core';
+
+@Service({
+  name: '{{componentName}}'
+})
+export class {{componentNameCamelCased}}Service implements OnInjection, OnConfig, OnInit {
+
+  private config: ServerConfig;
+
+  onInjection(services: any): void { }
+
+  onConfig(config: ServerConfig): void {
+
+    this.config = config;
+
+  }
+
+  onInit(): void { }
+
+}

@@ -1,0 +1,10 @@
+import { Plugin, PluginHooks, PluginLogger } from '@singular/core';
+
+@Plugin({
+  name: '{{componentName}}'
+})
+export class {{componentNameCamelCased}}Plugin implements PluginHooks.BeforeLaunch {
+
+  beforeLaunch(log: PluginLogger): void { }
+
+}
