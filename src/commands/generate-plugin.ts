@@ -37,14 +37,22 @@ app
   const pluginClassName = _.camelCase(args.name) + 'Plugin';
   const pluginImportSyntax = `\nimport { ${pluginClassName} } from '${pluginPath}';`;
   const pluginInstallSyntax = `.install(${pluginClassName})\n`;
+  const updatedMain= main
+  .replace(
+    /^(.*import[^;]+?from[^;]+?;(?!.*import))(.*Singular[^;]*)(\.launch\(\).*)/s,
+    `$1${pluginImportSyntax}$2${pluginInstallSyntax}$3`
+  );
+
+  // If regex failed
+  if ( main === updatedMain ) {
+
+    console.log(`Could not update "${path.resolve(app.data<SgData>().projectRoot, 'src', 'main.ts')}"!\nPlugin must be manually installed.`);
+    
+  }
 
   await fs.writeFile(
     path.resolve(app.data<SgData>().projectRoot, 'src', 'main.ts'),
-    main
-    .replace(
-      /^(.*import[^;]+?from[^;]+?;(?!.*import))(.*Singular[^;]*)(\.launch\(\).*)/s,
-      `$1${pluginImportSyntax}$2${pluginInstallSyntax}$3`
-    )
+    updatedMain
   );
 
 });
