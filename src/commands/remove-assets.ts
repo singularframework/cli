@@ -1,5 +1,5 @@
 import app from 'argumental';
-import { loadSingularJson, saveSingularJson, projectGuard } from '../lib/events';
+import { saveSingularJson, projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
 import ora from 'ora';
 import chalk from 'chalk';
@@ -10,8 +10,6 @@ app
 
 .argument('<...paths>', 'a list of paths to an asset file or directory, relative to "src"')
 
-// Find and load singular.json
-.on('validators:before', loadSingularJson)
 // Operation can only be performed in a Singular project
 .on('actions:before', projectGuard)
 

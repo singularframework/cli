@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import http from 'http';
 import { spawn } from '../lib/child-process';
-import { loadSingularJson, projectGuard } from '../lib/events';
+import { projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
 import ora from 'ora';
 import chalk from 'chalk';
@@ -16,8 +16,6 @@ app
 .validate(app.NUMBER)
 .default(6001)
 
-// Find and load singular.json
-.on('validators:before', loadSingularJson)
 // Operation can only be performed in a Singular project
 .on('actions:before', projectGuard)
 

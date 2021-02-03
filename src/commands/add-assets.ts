@@ -1,6 +1,6 @@
 import app from 'argumental';
 import path from 'path';
-import { loadSingularJson, saveSingularJson, projectGuard } from '../lib/events';
+import { saveSingularJson, projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
 import ora from 'ora';
 
@@ -20,8 +20,6 @@ app
 
 })
 
-// Find and load singular.json
-.on('validators:before', loadSingularJson)
 // Operation can only be performed in a Singular project
 .on('validators:before', projectGuard)
 

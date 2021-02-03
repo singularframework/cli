@@ -1,6 +1,6 @@
 import app from 'argumental';
 import chokidar from 'chokidar';
-import { loadSingularJson, projectGuard } from '../lib/events';
+import { projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
 import { Server } from '../lib/server';
 
@@ -14,8 +14,6 @@ app
 .option('-w --watch', 'enables hot reloading')
 .option('-m --minify', 'minifies the build (if not skipped)')
 
-// Find and load singular.json
-.on('validators:before', loadSingularJson)
 // Operation can only be performed in a Singular project (only when --skip-build is not provided)
 .on('actions:before', data => {
 

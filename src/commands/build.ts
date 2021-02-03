@@ -1,6 +1,6 @@
 import app from 'argumental';
 import { SgData } from '../lib/models';
-import { loadSingularJson, projectGuard } from '../lib/events';
+import { projectGuard } from '../lib/events';
 import { build } from '../lib/build';
 
 app
@@ -9,8 +9,6 @@ app
 
 .option('-m --minify', 'minifies the build')
 
-// Find and load singular.json
-.on('validators:before', loadSingularJson)
 // Operation can only be performed in a Singular project
 .on('actions:before', projectGuard)
 

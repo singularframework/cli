@@ -4,6 +4,7 @@ import app from 'argumental';
 import path from 'path';
 
 import { SgData } from './lib/models';
+import { loadSingularJson, versionControl } from './lib/version-control';
 
 import './commands/new';
 import './commands/build';
@@ -16,11 +17,20 @@ import './commands/add-assets';
 import './commands/remove-assets';
 import './commands/docs';
 
-// Set version globally
+// Set version globally on app data
 app.data<SgData>().version = require(path.resolve(__dirname, '..', 'package.json')).version;
+// Set version on cli
+app.version(app.data<SgData>().version)
 
-app
-// Set version
-.version(app.data<SgData>().version)
-// Parse arguments
-.parse(process.argv);
+// Detect and load singular.json if possible
+loadSingularJson()
+// Version control
+.then(() => versionControl())
+// Run the app
+.then(() => app.parse(process.argv))
+.catch(error => {
+
+  console.error(error);
+  process.exit(1);
+
+});
