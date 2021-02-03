@@ -6,7 +6,8 @@ import { spawn } from '../lib/child-process';
 import mustache from 'mustache';
 import { pathDoesntExist } from '../lib/validators';
 import { SgData } from '../lib/models';
-import { exit } from '../lib/exit';
+import ora from 'ora';
+import chalk from 'chalk';
 
 app
 .command('new', 'creates a new Singular project')
@@ -26,8 +27,10 @@ app
 
 .action(async (args, opts) => {
 
+  const spinner = ora().start();
+
   // Create project directory
-  console.log(`Creating project directory...`);
+  spinner.text = `Creating project directory`;
 
   await fs.ensureDir(path.resolve(process.cwd(), args.name));
 
@@ -44,7 +47,7 @@ app
   }, { spaces: 2 });
 
   // Generate src
-  console.log('Scaffolding project...');
+  spinner.text = 'Scaffolding project';
 
   await fs.ensureDir(path.resolve(process.cwd(), args.name, 'src'));
   await fs.copyFile(
@@ -61,7 +64,7 @@ app
   );
 
   // Create tsconfig.json
-  console.log('Configuring TypeScript...');
+  spinner.text = 'Configuring TypeScript';
 
   const tsconfigTemplate = await fs.readFile(
     path.resolve(__dirname, '..', '..', 'template', 'src', 'tsconfig.json.mustache'),
@@ -77,7 +80,7 @@ app
   // Initialize npm
   if ( ! opts.skipNpm ) {
 
-    console.log('Configuring npm...');
+    spinner.text = 'Configuring npm';
 
     // Generate package.json
     const template = await fs.readFile(path.resolve(__dirname, '..', '..', 'template', 'package.json.mustache'), { encoding: 'utf-8' });
@@ -91,29 +94,55 @@ app
     await fs.writeFile(path.resolve(process.cwd(), args.name, 'package.json'), packageJson);
 
     // npm install
-    const response = await spawn('npm', ['install'], {
+    spinner.text = 'Installing dependencies';
+
+    const child = spawn('npm', ['install'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: 'inherit'
+      stdio: ['ignore', 'ignore', 'pipe']
     });
 
-    if ( response.code !== 0 ) exit(`Could not create project due to an error!`);
+    const stderrCache: string[] = [];
+    child.ref.stderr.on('data', data => stderrCache.push(chalk.redBright(data)));
+
+    const results = await child.promise;
+
+    if ( results.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(stderrCache.join('\n'));
+
+      process.exit(1);
+
+    }
 
   }
 
   // Initialize git
   if ( ! opts.skipGit ) {
 
-    console.log(`Configuring git...`);
+    spinner.text = `Configuring git`;
 
     // git init
-    const initResponse = await spawn('git', ['init'], {
+    const initChild = spawn('git', ['init'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: 'inherit'
+      stdio: ['ignore', 'ignore', 'pipe']
     });
 
-    if ( initResponse.code !== 0 ) exit(`Could not create project due to an error!`);
+    const initStderrCache: string[] = [];
+    initChild.ref.stderr.on('data', data => initStderrCache.push(chalk.redBright(data)));
+
+    const initResults = await initChild.promise;
+
+    if ( initResults.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(initStderrCache.join('\n'));
+
+      process.exit(1);
+
+    }
 
     // Generate .gitignore
     const template = await fs.readFile(path.resolve(__dirname, '..', '..', 'template', '.gitignore.mustache'), { encoding: 'utf-8' });
@@ -122,24 +151,46 @@ app
     await fs.writeFile(path.resolve(process.cwd(), args.name, '.gitignore'), gitignore);
 
     // Commit
-    const addResponse = await spawn('git', ['add', '.'], {
+    const addChild = spawn('git', ['add', '.'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: 'inherit'
+      stdio: ['ignore', 'ignore', 'pipe']
     });
 
-    if ( addResponse.code !== 0 ) exit(`Could not create project due to an error!`);
+    const addStderrCache: string[] = [];
+    addChild.ref.stderr.on('data', data => addStderrCache.push(chalk.redBright(data)));
 
-    const commitResponse = await spawn('git', ['commit', '-m', '"Singular commit"'], {
+    const addResults = await addChild.promise;
+
+    if ( addResults.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(addStderrCache.join('\n'));
+      process.exit(1);
+
+    }
+
+    const commitChild = spawn('git', ['commit', '-m', '"Singular commit"'], {
       windowsHide: true,
       cwd: path.join(process.cwd(), args.name),
-      stdio: 'inherit'
+      stdio: ['ignore', 'ignore', 'pipe']
     });
 
-    if ( commitResponse.code !== 0 ) exit(`Could not create project due to an error!`);
+    const commitStderrCache: string[] = [];
+    commitChild.ref.stderr.on('data', data => commitStderrCache.push(chalk.redBright(data)));
+
+    const commitResults = await commitChild.promise;
+
+    if ( commitResults.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(commitStderrCache.join('\n'));
+      process.exit(1);
+
+    }
 
   }
 
-  console.log('Done!');
+  spinner.succeed(`Project ${chalk.blueBright(args.name)} was created`);
 
 });

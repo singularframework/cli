@@ -1,6 +1,8 @@
 import app from 'argumental';
 import { loadSingularJson, saveSingularJson, projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
+import ora from 'ora';
+import chalk from 'chalk';
 
 app
 .command('remove assets', 'removes previously registered asset paths')
@@ -29,13 +31,13 @@ app
     }
     else {
 
-      console.log(`Path "${path}" is not registered!`);
+      ora().warn(`Path ${chalk.yellow(path)} is not registered!`);
 
     }
 
   }
 
-  console.log('Assets are unregistered');
+  ora().succeed('Assets are removed');
 
 })
 

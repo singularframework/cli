@@ -2,21 +2,25 @@ import path from 'path';
 import fs from 'fs-extra';
 import terser from 'terser';
 import glob from 'glob';
+import ora from 'ora';
+import chalk from 'chalk';
 import { spawn } from './child-process';
 import { SgData } from './models';
 
 /** Builds the source code into dist. */
 export async function build(singularData: SgData, minify?: boolean) {
 
+  const spinner = ora().start();
+
   // Clean up
-  console.log('Cleaning up...');
+  spinner.text = 'Cleaning up';
 
   await fs.remove(path.join(singularData.projectRoot, 'dist'));
 
   // Build the source code
-  console.log('Building the server...');
+  spinner.text = 'Building the server';
 
-  await spawn(
+  const child = spawn(
     'node',
     [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
@@ -26,12 +30,26 @@ export async function build(singularData: SgData, minify?: boolean) {
     {
       windowsHide: true,
       cwd: singularData.projectRoot,
-      stdio: 'inherit'
+      stdio: ['ignore', 'ignore', 'pipe']
     }
   );
 
+  const stderrCache: string[] = [];
+  child.ref.stderr.on('data', data => stderrCache.push(chalk.redBright(data)));
+
+  const results = await child.promise;
+
+  if ( results.code !== 0 ) {
+
+    spinner.fail(chalk.redBright('Build failed!'));
+    console.error(stderrCache.join('\n'));
+
+    process.exit(1);
+
+  }
+
   // Copy the assets
-  console.log('Copying assets...');
+  spinner.text = 'Copying assets';
 
   for ( const asset of singularData.singular.project.assets || [] ) {
 
@@ -45,7 +63,7 @@ export async function build(singularData: SgData, minify?: boolean) {
   // Minify if asked
   if ( minify ) {
 
-    console.log('Minifying the build...');
+    spinner.text = 'Minifying the build';
 
     // Scan for all .js files inside dist directory
     const jsFiles = glob.sync('**/*.js', { cwd: path.resolve(singularData.projectRoot, 'dist') });
@@ -80,6 +98,6 @@ export async function build(singularData: SgData, minify?: boolean) {
 
   }
 
-  console.log('Done!');
+  spinner.succeed('Build successfull')
 
 }

@@ -1,5 +1,5 @@
 import app from 'argumental';
-import { ChildProcess, spawn } from 'child_process';
+import { ChildProcess, spawn } from './child-process';
 import path from 'path';
 import fs from 'fs-extra';
 import kill from 'tree-kill';
@@ -52,7 +52,7 @@ export class Server {
         cwd: projectFound ? app.data<SgData>().projectRoot : process.cwd(),
         stdio: 'inherit'
       }
-    );
+    ).ref;
 
   }
 

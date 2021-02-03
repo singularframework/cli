@@ -3,10 +3,14 @@ import path from 'path';
 import fs from 'fs-extra';
 import mustache from 'mustache';
 import _ from 'lodash';
+import ora from 'ora';
+import chalk from 'chalk';
 
 import { SgData } from './models';
 
 export async function generateComponent(type: 'service'|'router'|'interceptor'|'plugin', name: string) {
+
+  const spinner = ora().start('Generating component');
 
   const template = await fs.readFile(
     path.resolve(__dirname, '..', '..', 'template', 'components', `${type}.ts.mustache`),
@@ -36,6 +40,6 @@ export async function generateComponent(type: 'service'|'router'|'interceptor'|'
 
   await fs.writeFile(filepath, service);
 
-  console.log(`Generated ${type} "${name}" at "${filepath}"`);
+  spinner.succeed(`Generated ${type} ${chalk.blueBright(name)} at ${chalk.yellow(filepath)}`);
 
 }

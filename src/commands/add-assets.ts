@@ -2,6 +2,7 @@ import app from 'argumental';
 import path from 'path';
 import { loadSingularJson, saveSingularJson, projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
+import ora from 'ora';
 
 app
 .command('add assets', 'registers paths as assets to be copied during builds')
@@ -32,7 +33,7 @@ app
   app.data<SgData>().singular.project.assets = app.data<SgData>().singular.project.assets
   .concat(...args.paths.filter((path: string) => ! app.data<SgData>().singular.project.assets.includes(path)));
 
-  console.log('Assets are registered');
+  ora().succeed('Assets are registered');
 
 })
 

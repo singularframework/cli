@@ -5,6 +5,8 @@ import http from 'http';
 import { spawn } from '../lib/child-process';
 import { loadSingularJson, projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
+import ora from 'ora';
+import chalk from 'chalk';
 
 app
 .command('docs', 'builds the TypeDoc documentation from source code')
@@ -21,19 +23,25 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
+  const spinner = ora().start();
+
   // If docs is disabled
   if ( ! app.data<SgData>().singular.project.docs ) {
 
-    console.log('TypeDoc is disabled on this project!');
+    spinner.fail('TypeDoc is disabled on this project!');
     return;
 
   }
 
   // Clean up
+  spinner.text = 'Cleaning up';
+
   await fs.remove(path.resolve(app.data<SgData>().projectRoot, 'docs'));
 
   // Build the documentation
-  await spawn(
+  spinner.text = 'Building the documentation';
+
+  const child = spawn(
     // Syntax: node <path_to_typedoc> --out <path_to_docs_dir> <path_to_src_dir>
     'node',
     [
@@ -45,14 +53,30 @@ app
     {
       windowsHide: true,
       cwd: path.join(app.data<SgData>().projectRoot, 'src'),
-      stdio: 'inherit'
+      stdio: ['ignore', 'ignore', 'pipe']
     }
   );
 
-  console.log('Documentation was built');
+  const stderrCache: string[] = [];
+  child.ref.stderr.on('data', data => stderrCache.push(chalk.redBright(data)));
+
+  const results = await child.promise;
+
+  if ( results.code !== 0 ) {
+
+    spinner.fail(chalk.redBright('Build failed!'));
+    console.error(stderrCache.join('\n'));
+
+    process.exit(1);
+
+  }
+
+  spinner.succeed('Documentation was built');
 
   // Serve if asked
   if ( ! opts.serve ) return;
+
+  spinner.start('Serving the documentation')
 
   http.createServer((req, res) => {
 
@@ -76,7 +100,7 @@ app
   .listen(opts.port)
   .on('listening', () => {
 
-    console.log(`Documentation is being served on localhost:${opts.port}`);
+    spinner.succeed(`Documentation is being served on ${chalk.blueBright('localhost')}:${chalk.yellow(opts.port)}`);
 
   });
 

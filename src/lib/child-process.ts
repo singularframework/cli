@@ -1,15 +1,18 @@
-import child from 'child_process';
+import { spawn as childSpawn, SpawnOptions } from 'child_process';
 
-/** Spawns a child process and resolves the promise when the process exits. */
-export function spawn(command: string, args: string[], options: child.SpawnOptions): Promise<ChildSpawnResponse> {
+export { ChildProcess } from 'child_process';
 
-  return new Promise((resolve, reject) => {
+/** Spawns a child process and returns both the reference and a promise which is resolved when the process exits. */
+export function spawn(command: string, args: string[], options: SpawnOptions) {
 
-    child.spawn(command, args, options)
-    .on('exit', (code, signal) => resolve({ code, signal }))
-    .on('error', reject);
+  const ref = childSpawn(command, args, options);
 
-  });
+  return {
+    ref,
+    promise: new Promise<ChildSpawnResponse>((resolve, reject) => ref
+      .on('exit', (code, signal) => resolve({ code, signal }))
+      .on('error', reject))
+  };
 
 }
 
