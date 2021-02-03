@@ -8,13 +8,6 @@ import { SgData } from './models';
 
 export async function generateComponent(type: 'service'|'router'|'interceptor'|'plugin', name: string) {
 
-  // If project not found
-  if ( ! app.data<SgData>().singular ) {
-
-    throw new Error('Could not locate Singular project!');
-
-  }
-
   const template = await fs.readFile(
     path.resolve(__dirname, '..', '..', 'template', 'components', `${type}.ts.mustache`),
     { encoding: 'utf-8' }

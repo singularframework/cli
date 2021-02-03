@@ -3,7 +3,7 @@ import _ from 'lodash';
 import path from 'path';
 import fs from 'fs-extra';
 import { pathDoesntExist } from '../common/validators';
-import { loadSingularJson } from '../common/events';
+import { loadSingularJson, projectGuard } from '../common/events';
 import { generateComponent } from '../common/components';
 import { SgData } from '../common/models';
 
@@ -26,6 +26,8 @@ app
 
 // Find and load singular.json
 .on('validators:before', loadSingularJson)
+// Operation can only be performed in a Singular project
+.on('validators:before', projectGuard)
 
 .action(async args => {
 
@@ -47,7 +49,7 @@ app
   if ( main === updatedMain ) {
 
     console.log(`Could not update "${path.resolve(app.data<SgData>().projectRoot, 'src', 'main.ts')}"!\nPlugin must be manually installed.`);
-    
+
   }
 
   await fs.writeFile(

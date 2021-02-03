@@ -1,8 +1,9 @@
 import { Argumental } from 'argumental/dist/types';
 import app from 'argumental';
-import { SgData } from './models';
 import path from 'path';
 import fs from 'fs-extra';
+import { exit } from './exit';
+import { SgData } from './models';
 
 /** Looks for singular.json file in the current working directory.
   * If not found, will traverse backwards one directory level at a time until reaching root directory or finding the file.
@@ -51,5 +52,12 @@ export const saveSingularJson: Argumental.EventHandler<Argumental.EventData<any>
     app.data<SgData>().singular,
     { spaces: 2 }
   );
+
+};
+
+/** Guards against non-present singular.json. */
+export const projectGuard: Argumental.EventHandler<Argumental.EventData<any>> = () => {
+
+  if ( ! app.data<SgData>().singular ) exit('Could not locate Singular project!');
 
 };

@@ -6,6 +6,7 @@ import { spawn } from '../common/child-process';
 import mustache from 'mustache';
 import { pathDoesntExist } from '../common/validators';
 import { SgData } from '../common/models';
+import { exit } from '../common/exit';
 
 app
 .command('new', 'creates a new Singular project')
@@ -96,7 +97,7 @@ app
       stdio: 'inherit'
     });
 
-    if ( response.code !== 0 ) throw new Error(`Could not create project due to an error!`);
+    if ( response.code !== 0 ) exit(`Could not create project due to an error!`);
 
   }
 
@@ -112,7 +113,7 @@ app
       stdio: 'inherit'
     });
 
-    if ( initResponse.code !== 0 ) throw new Error(`Could not create project due to an error!`);
+    if ( initResponse.code !== 0 ) exit(`Could not create project due to an error!`);
 
     // Generate .gitignore
     const template = await fs.readFile(path.resolve(__dirname, '..', '..', 'template', '.gitignore.mustache'), { encoding: 'utf-8' });
@@ -127,7 +128,7 @@ app
       stdio: 'inherit'
     });
 
-    if ( addResponse.code !== 0 ) throw new Error(`Could not create project due to an error!`);
+    if ( addResponse.code !== 0 ) exit(`Could not create project due to an error!`);
 
     const commitResponse = await spawn('git', ['commit', '-m', '"Singular commit"'], {
       windowsHide: true,
@@ -135,7 +136,7 @@ app
       stdio: 'inherit'
     });
 
-    if ( commitResponse.code !== 0 ) throw new Error(`Could not create project due to an error!`);
+    if ( commitResponse.code !== 0 ) exit(`Could not create project due to an error!`);
 
   }
 

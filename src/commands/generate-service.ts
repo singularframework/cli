@@ -2,7 +2,7 @@ import app from 'argumental';
 import _ from 'lodash';
 import path from 'path';
 import { pathDoesntExist } from '../common/validators';
-import { loadSingularJson } from '../common/events';
+import { loadSingularJson, projectGuard } from '../common/events';
 import { generateComponent } from '../common/components';
 import { SgData } from '../common/models';
 
@@ -25,6 +25,8 @@ app
 
 // Find and load singular.json
 .on('validators:before', loadSingularJson)
+// Operation can only be performed in a Singular project
+.on('validators:before', projectGuard)
 
 .action(async args => {
 

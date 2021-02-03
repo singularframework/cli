@@ -1,6 +1,6 @@
 import app from 'argumental';
 import path from 'path';
-import { loadSingularJson, saveSingularJson } from '../common/events';
+import { loadSingularJson, saveSingularJson, projectGuard } from '../common/events';
 import { SgData } from '../common/models';
 
 app
@@ -21,6 +21,8 @@ app
 
 // Find and load singular.json
 .on('validators:before', loadSingularJson)
+// Operation can only be performed in a Singular project
+.on('validators:before', projectGuard)
 
 .action(async args => {
 

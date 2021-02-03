@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import http from 'http';
 import { spawn } from '../common/child-process';
-import { loadSingularJson } from '../common/events';
+import { loadSingularJson, projectGuard } from '../common/events';
 import { SgData } from '../common/models';
 
 app
@@ -11,9 +11,13 @@ app
 
 .option('-s --serve', 'serves the documentation')
 .option('-p --port <number>', 'specifies the port number to serve the documentation on')
+.validate(app.NUMBER)
 .default(6001)
 
+// Find and load singular.json
 .on('validators:before', loadSingularJson)
+// Operation can only be performed in a Singular project
+.on('actions:before', projectGuard)
 
 .actionDestruct(async ({ opts }) => {
 
