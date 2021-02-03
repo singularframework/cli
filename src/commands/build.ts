@@ -1,7 +1,7 @@
 import app from 'argumental';
-import { SgData } from '../common/models';
-import { loadSingularJson, projectGuard } from '../common/events';
-import { build } from '../common/build';
+import { SgData } from '../lib/models';
+import { loadSingularJson, projectGuard } from '../lib/events';
+import { build } from '../lib/build';
 
 app
 .command('build', 'builds the server')

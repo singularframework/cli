@@ -1,8 +1,8 @@
 import app from 'argumental';
 import chokidar from 'chokidar';
-import { loadSingularJson, projectGuard } from '../common/events';
-import { SgData } from '../common/models';
-import { Server } from '../common/server';
+import { loadSingularJson, projectGuard } from '../lib/events';
+import { SgData } from '../lib/models';
+import { Server } from '../lib/server';
 
 app
 .command('serve', 'runs the server')

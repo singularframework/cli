@@ -1,10 +1,10 @@
 import app from 'argumental';
 import _ from 'lodash';
 import path from 'path';
-import { pathDoesntExist } from '../common/validators';
-import { loadSingularJson, projectGuard } from '../common/events';
-import { generateComponent } from '../common/components';
-import { SgData } from '../common/models';
+import { pathDoesntExist } from '../lib/validators';
+import { loadSingularJson, projectGuard } from '../lib/events';
+import { generateComponent } from '../lib/components';
+import { SgData } from '../lib/models';
 
 app
 .command('generate router', 'generates a new router')

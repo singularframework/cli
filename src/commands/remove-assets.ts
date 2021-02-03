@@ -1,6 +1,6 @@
 import app from 'argumental';
-import { loadSingularJson, saveSingularJson, projectGuard } from '../common/events';
-import { SgData } from '../common/models';
+import { loadSingularJson, saveSingularJson, projectGuard } from '../lib/events';
+import { SgData } from '../lib/models';
 
 app
 .command('remove assets', 'removes previously registered asset paths')

@@ -3,7 +3,7 @@ import 'source-map-support/register';
 import app from 'argumental';
 import path from 'path';
 
-import { SgData } from './common/models';
+import { SgData } from './lib/models';
 
 import './commands/new';
 import './commands/build';

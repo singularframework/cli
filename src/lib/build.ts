@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import terser from 'terser';
 import glob from 'glob';
-import { spawn } from '../common/child-process';
+import { spawn } from './child-process';
 import { SgData } from './models';
 
 /** Builds the source code into dist. */

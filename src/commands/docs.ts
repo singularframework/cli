@@ -2,9 +2,9 @@ import app from 'argumental';
 import path from 'path';
 import fs from 'fs-extra';
 import http from 'http';
-import { spawn } from '../common/child-process';
-import { loadSingularJson, projectGuard } from '../common/events';
-import { SgData } from '../common/models';
+import { spawn } from '../lib/child-process';
+import { loadSingularJson, projectGuard } from '../lib/events';
+import { SgData } from '../lib/models';
 
 app
 .command('docs', 'builds the TypeDoc documentation from source code')

@@ -2,11 +2,11 @@ import app from 'argumental';
 import path from 'path';
 import fs from 'fs-extra';
 import _ from 'lodash';
-import { spawn } from '../common/child-process';
+import { spawn } from '../lib/child-process';
 import mustache from 'mustache';
-import { pathDoesntExist } from '../common/validators';
-import { SgData } from '../common/models';
-import { exit } from '../common/exit';
+import { pathDoesntExist } from '../lib/validators';
+import { SgData } from '../lib/models';
+import { exit } from '../lib/exit';
 
 app
 .command('new', 'creates a new Singular project')
