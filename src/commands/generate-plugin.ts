@@ -2,6 +2,8 @@ import app from 'argumental';
 import _ from 'lodash';
 import path from 'path';
 import fs from 'fs-extra';
+import ora from 'ora';
+import chalk from 'chalk';
 import { pathDoesntExist } from '../lib/validators';
 import { loadSingularJson, projectGuard } from '../lib/events';
 import { generateComponent } from '../lib/components';
@@ -48,7 +50,10 @@ app
   // If regex failed
   if ( main === updatedMain ) {
 
-    console.log(`Could not update "${path.resolve(app.data<SgData>().projectRoot, 'src', 'main.ts')}"!\nPlugin must be manually installed.`);
+    ora().stopAndPersist({
+      text: chalk.yellow(`Could not update "${path.join('src', 'main.ts')}"! Plugin must be manually installed.`),
+      symbol: chalk.yellow('!')
+    });
 
   }
 

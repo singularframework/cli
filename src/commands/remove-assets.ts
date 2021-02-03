@@ -31,7 +31,10 @@ app
     }
     else {
 
-      ora().warn(`Path ${chalk.yellow(path)} is not registered!`);
+      ora().stopAndPersist({
+        text: `Path ${chalk.yellow(path)} is not registered!`,
+        symbol: chalk.yellow('!')
+      });
 
     }
 
