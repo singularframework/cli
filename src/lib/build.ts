@@ -100,7 +100,14 @@ export async function build(singularData: SgData, minify?: boolean) {
     for ( const file of jsonFiles ) {
 
       const filepath = path.resolve(singularData.projectRoot, 'dist', file);
-      const data = await fs.readJson(filepath, { encoding: 'utf-8' });
+      let data = await fs.readJson(filepath, { encoding: 'utf-8' });
+
+      // Further minify tsconfig.json
+      if ( file === 'tsconfig.json' ) {
+
+        data = { compilerOptions: { paths: data.compilerOptions.paths } };
+
+      }
 
       await fs.writeJson(filepath, data);
 
