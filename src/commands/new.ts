@@ -46,8 +46,10 @@ app
     }
   }, { spaces: 2 });
 
+  spinner.succeed();
+
   // Generate src
-  spinner.text = 'Scaffolding project';
+  spinner.start('Scaffolding project');
 
   await fs.ensureDir(path.resolve(process.cwd(), args.name, 'src'));
   await fs.copyFile(
@@ -63,8 +65,10 @@ app
     path.resolve(process.cwd(), args.name, 'README.md')
   );
 
+  spinner.succeed();
+
   // Create tsconfig.json
-  spinner.text = 'Configuring TypeScript';
+  spinner.start('Configuring TypeScript');
 
   const tsconfigTemplate = await fs.readFile(
     path.resolve(__dirname, '..', '..', 'template', 'src', 'tsconfig.json.mustache'),
@@ -77,10 +81,12 @@ app
 
   await fs.writeFile(path.resolve(process.cwd(), args.name, 'src', 'tsconfig.json'), tsconfig);
 
+  spinner.succeed();
+
   // Initialize npm
   if ( ! opts.skipNpm ) {
 
-    spinner.text = 'Configuring npm';
+    spinner.start('Configuring npm');
 
     // Generate package.json
     const template = await fs.readFile(path.resolve(__dirname, '..', '..', 'template', 'package.json.mustache'), { encoding: 'utf-8' });
@@ -93,8 +99,10 @@ app
 
     await fs.writeFile(path.resolve(process.cwd(), args.name, 'package.json'), packageJson);
 
+    spinner.succeed();
+
     // npm install
-    spinner.text = 'Installing dependencies';
+    spinner.start('Installing dependencies');
 
     const child = spawn('npm', ['install'], {
       windowsHide: true,
@@ -116,12 +124,14 @@ app
 
     }
 
+    spinner.succeed();
+
   }
 
   // Initialize git
   if ( ! opts.skipGit ) {
 
-    spinner.text = `Configuring git`;
+    spinner.start(`Configuring git`);
 
     // git init
     const initChild = spawn('git', ['init'], {
@@ -188,6 +198,8 @@ app
       process.exit(1);
 
     }
+
+    spinner.succeed();
 
   }
 

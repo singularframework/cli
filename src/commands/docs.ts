@@ -21,7 +21,7 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
-  const spinner = ora().start();
+  const spinner = ora();
 
   // If docs is disabled
   if ( ! app.data<SgData>().singular.project.docs ) {
@@ -32,12 +32,14 @@ app
   }
 
   // Clean up
-  spinner.text = 'Cleaning up';
+  spinner.start('Cleaning up');
 
   await fs.remove(path.resolve(app.data<SgData>().projectRoot, 'docs'));
 
+  spinner.succeed();
+
   // Build the documentation
-  spinner.text = 'Building the documentation';
+  spinner.start('Building the documentation');
 
   const child = spawn(
     // Syntax: node <path_to_typedoc> --out <path_to_docs_dir> <path_to_src_dir>

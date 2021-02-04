@@ -10,15 +10,17 @@ import { SgData } from './models';
 /** Builds the source code into dist. */
 export async function build(singularData: SgData, minify?: boolean) {
 
-  const spinner = ora().start();
+  const spinner = ora();
 
   // Clean up
-  spinner.text = 'Cleaning up';
+  spinner.start('Cleaning up');
 
   await fs.remove(path.join(singularData.projectRoot, 'dist'));
 
+  spinner.succeed();
+
   // Build the source code
-  spinner.text = 'Building the server';
+  spinner.start('Building the server');
 
   const child = spawn(
     'node',
@@ -48,22 +50,30 @@ export async function build(singularData: SgData, minify?: boolean) {
 
   }
 
+  spinner.succeed();
+
   // Copy the assets
-  spinner.text = 'Copying assets';
+  if ( singularData.singular.project.assets && singularData.singular.project.assets.length ) {
 
-  for ( const asset of singularData.singular.project.assets || [] ) {
+    spinner.start('Copying assets');
 
-    await fs.copy(
-      path.resolve(singularData.projectRoot, 'src', asset),
-      path.resolve(singularData.projectRoot, 'dist', asset)
-    );
+    for ( const asset of singularData.singular.project.assets ) {
+
+      await fs.copy(
+        path.resolve(singularData.projectRoot, 'src', asset),
+        path.resolve(singularData.projectRoot, 'dist', asset)
+      );
+
+    }
+
+    spinner.succeed();
 
   }
 
   // Minify if asked
   if ( minify ) {
 
-    spinner.text = 'Minifying the build';
+    spinner.start('Minifying the build');
 
     // Scan for all .js files inside dist directory
     const jsFiles = glob.sync('**/*.js', { cwd: path.resolve(singularData.projectRoot, 'dist') });
@@ -95,6 +105,8 @@ export async function build(singularData: SgData, minify?: boolean) {
       await fs.writeJson(filepath, data);
 
     }
+
+    spinner.succeed();
 
   }
 
