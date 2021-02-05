@@ -19,7 +19,10 @@ export const saveSingularJson: Argumental.EventHandler<Argumental.EventData<any>
 };
 
 /** Guards against non-present singular.json. */
-export const projectGuard: Argumental.EventHandler<Argumental.EventData<any>> = () => {
+export const projectGuard: Argumental.EventHandler<Argumental.EventData<any>> = (data) => {
+
+  // Skip guard if immediate option --help was provided
+  if ( data.opts.help ) return;
 
   if ( ! app.data<SgData>().singular ) exit('Could not locate Singular project!');
 
