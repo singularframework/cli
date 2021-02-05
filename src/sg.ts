@@ -15,6 +15,7 @@ import './commands/generate-interceptor';
 import './commands/generate-plugin';
 import './commands/add-assets';
 import './commands/remove-assets';
+import './commands/test';
 import './commands/docs';
 
 // Set version globally on app data

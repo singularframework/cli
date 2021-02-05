@@ -8,6 +8,7 @@ import { pathDoesntExist } from '../lib/validators';
 import { SgData } from '../lib/models';
 import ora from 'ora';
 import chalk from 'chalk';
+import glob from 'glob';
 
 app
 .command('new', 'creates a new Singular project')
@@ -82,6 +83,28 @@ app
   await fs.writeFile(path.resolve(process.cwd(), args.name, 'src', 'tsconfig.json'), tsconfig);
 
   spinner.succeed();
+
+  // Setup tests
+  if ( ! opts.skipTests ) {
+
+    spinner.start('Setting up tests');
+
+    // Scan all .mustache files in template/test
+    const files = glob.sync('**/*.mustache', { cwd: path.resolve(__dirname, '..', '..', 'template', 'test') });
+
+    // Copy all files
+    for ( const file of files ) {
+
+      await fs.copy(
+        path.resolve(__dirname, '..', '..', 'template', 'test', file),
+        path.resolve(process.cwd(), args.name, 'test', file.replace('.mustache', ''))
+      );
+
+    }
+
+    spinner.succeed();
+
+  }
 
   // Initialize npm
   if ( ! opts.skipNpm ) {

@@ -1,0 +1,36 @@
+import got, { Response } from 'got';
+
+export function configureGot(port?: number) {
+
+  return got.extend({
+    prefixUrl: `http://localhost:${port ?? 5002}`,
+    responseType: 'json',
+    retry: 0,
+    // Extract error messages from HTTP error responses
+    hooks: {
+      'beforeError': [error => {
+
+        const res = <Response<ErrorResponse>>(error.response);
+
+        if ( res && res.body && res.body.error ) {
+
+          error.message = `${res.body.code}: ${res.body.message}`;
+          error.code = res.body.code;
+
+        }
+
+        return error;
+
+      }]
+    }
+  });
+
+}
+
+export interface ErrorResponse {
+
+  error: true;
+  message: string;
+  code: string;
+
+}

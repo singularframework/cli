@@ -1,9 +1,10 @@
 import { Singular } from '@singular/core';
 import tsconfig from './tsconfig.json';
-import { devConfig, prodConfig } from './server.config';
+import { profiles } from './server.config';
 
 Singular
 .registerAliases(tsconfig.compilerOptions.paths)
-.config('dev', devConfig)
-.config('prod', prodConfig)
+.config('dev', profiles.dev)
+.config('prod', profiles.prod)
+.config('test', profiles.test)
 .launch();

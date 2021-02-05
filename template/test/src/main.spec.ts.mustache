@@ -1,0 +1,50 @@
+import 'source-map-support/register';
+import { spawn } from 'child_process';
+import kill from 'tree-kill';
+import path from 'path';
+import chaiAsPromised from 'chai-as-promised';
+import chai from 'chai';
+import { LogParserClass } from './lib/log-parser';
+import { configureGot } from './lib/request';
+import { profiles } from '../../dist/server.config.js';
+
+// Install chai plugin
+chai.use(chaiAsPromised);
+
+// Start the server from build
+before(async function() {
+
+  // Default to 'test' config profile
+  if ( ! process.env.SINGULAR_CONFIG_PROFILE )
+    process.env.SINGULAR_CONFIG_PROFILE = 'test';
+
+  // Load the server config profile
+  const profile = profiles[process.env.SINGULAR_CONFIG_PROFILE];
+
+  // Launch the server
+  (<any>global).server = spawn('node', ['main.js'], {
+    windowsHide: true,
+    cwd: path.resolve(__dirname, '..', '..', 'dist'),
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  // Install log parser glovally
+  (<any>global).logs = new LogParserClass(server, profile.timezone);
+
+  // Configure Got and inject the instance globally
+  (<any>global).request = configureGot(profile.port);
+
+  // Wait for server to start
+  await logs.next('startup', 'notice');
+
+});
+
+// Import feature tests
+import './feature.spec';
+
+// Kill the server
+after(function() {
+
+  if ( ! server.killed ) kill(server.pid);
+
+});
