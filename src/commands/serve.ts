@@ -9,6 +9,7 @@ app
 .alias('s')
 
 .option('-p --profile <config_profile>', 'sets the config profile before launching the server (defaults to dev)')
+.validate(app.STRING)
 .option('--prod', 'shorthand for --profile prod (will be ignored if --profile is provided)')
 .option('--skip-build', 'skips building the server')
 .option('-w --watch', 'enables hot reloading')
