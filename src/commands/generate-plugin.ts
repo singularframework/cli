@@ -36,7 +36,7 @@ app
   // Update src/main.ts
   const main = await fs.readFile(path.resolve(app.data<SgData>().projectRoot, 'src', 'main.ts'), { encoding: 'utf-8' });
   const pluginPath = `./${app.data<SgData>().singular.project.flat ? '' : 'plugins/'}${args.name}.plugin`;
-  const pluginClassName = _.camelCase(args.name) + 'Plugin';
+  const pluginClassName = _.flow(_.camelCase, _.upperFirst)(args.name) + 'Plugin';
   const pluginImportSyntax = `\nimport { ${pluginClassName} } from '${pluginPath}';`;
   const pluginInstallSyntax = `.install(${pluginClassName})\n`;
   const updatedMain= main

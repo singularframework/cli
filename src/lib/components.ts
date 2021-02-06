@@ -18,7 +18,7 @@ export async function generateComponent(type: 'service'|'router'|'interceptor'|'
   );
   const service = mustache.render(template, {
     componentName: name,
-    componentNameCamelCased: _.camelCase(name)
+    componentNamePascalCased: _.flow(_.camelCase, _.upperFirst)(name)
   });
   const filepath = path.resolve(
     // Project root (detected by singular.json)
