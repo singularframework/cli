@@ -23,7 +23,7 @@ app
 .option('--skip-tests', 'avoids configuring unit tests')
 .option('--skip-docs', 'avoids configuring TypeDoc')
 .option('--skip-git', 'avoids creating a git repository')
-.option('--skip-npm', 'avoids configuring npm and installing dependencies')
+.option('--skip-npm', 'avoids installing npm dependencies')
 .option('--flat', 'configures the project to use a flat file structure')
 
 .action(async (args, opts) => {
@@ -65,6 +65,17 @@ app
     path.resolve(__dirname, '..', '..', 'template', 'README.md.mustache'),
     path.resolve(process.cwd(), args.name, 'README.md')
   );
+
+  // Generate package.json
+  const template = await fs.readFile(path.resolve(__dirname, '..', '..', 'template', 'package.json.mustache'), { encoding: 'utf-8' });
+  const packageJson = mustache.render(template, {
+    projectName: args.name,
+    testDependencies: ! opts.skipTests,
+    docsScript: ! opts.skipDocs,
+    docsDependencies: ! opts.skipDocs
+  });
+
+  await fs.writeFile(path.resolve(process.cwd(), args.name, 'package.json'), packageJson);
 
   spinner.succeed();
 
@@ -108,21 +119,6 @@ app
 
   // Initialize npm
   if ( ! opts.skipNpm ) {
-
-    spinner.start('Configuring npm');
-
-    // Generate package.json
-    const template = await fs.readFile(path.resolve(__dirname, '..', '..', 'template', 'package.json.mustache'), { encoding: 'utf-8' });
-    const packageJson = mustache.render(template, {
-      projectName: args.name,
-      testDependencies: ! opts.skipTests,
-      docsScript: ! opts.skipDocs,
-      docsDependencies: ! opts.skipDocs
-    });
-
-    await fs.writeFile(path.resolve(process.cwd(), args.name, 'package.json'), packageJson);
-
-    spinner.succeed();
 
     // npm install
     spinner.start('Installing dependencies');
