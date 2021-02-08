@@ -1,6 +1,7 @@
 import { spawn as childSpawn } from './child-process';
 import { wait as waitFunction } from './wait';
 import { kill as treeKill } from './kill';
+import { ChildProcess } from 'child_process';
 
 declare global {
 
@@ -11,5 +12,7 @@ declare global {
   const testDir: string;
   const wait: typeof waitFunction;
   const kill: typeof treeKill;
+  /** Holds a reference to all running processes spawned. */
+  const processes: ChildProcess[];
 
 }

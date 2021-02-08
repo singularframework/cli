@@ -15,11 +15,24 @@ export function spawn(command: string, args: string[], options?: SpawnOptions) {
 
   const ref = childSpawn(command, args, options);
 
+  // Add to processes
+  processes.push(ref);
+
   return {
     ref,
     promise: new Promise<ChildSpawnResponse>((resolve, reject) => ref
-      .on('exit', (code, signal) => resolve({ code, signal }))
-      .on('error', reject))
+      .on('exit', (code, signal) => {
+
+        processes.splice(processes.indexOf(ref), 1);
+        resolve({ code, signal });
+
+      })
+      .on('error', error => {
+
+        processes.splice(processes.indexOf(ref), 1);
+        reject(error);
+
+      }))
   };
 
 }

@@ -1,0 +1,4 @@
+{
+  "reporter": "mocha-progress-reporter",
+  "spec": "./test/dist/main.spec.js"
+}
