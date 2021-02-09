@@ -1,4 +1,5 @@
 import { spawn as childSpawn, SpawnOptions } from 'child_process';
+import path from 'path';
 
 export { ChildProcess } from 'child_process';
 
@@ -33,6 +34,19 @@ export function spawn(command: string, args: string[], options?: SpawnOptions) {
         reject(error);
 
       }))
+  };
+
+}
+
+/**
+* Changes the cwd of the returning functions.
+* @param relativePath Path relative to testDir.
+*/
+export function cd(relativePath: string) {
+
+  return {
+    /** Spawns a child process and returns both the reference and a promise which is resolved when the process exits. */
+    spawn: (command: string, args: string[], options?: SpawnOptions) => spawn(command, args, Object.assign({}, { cwd: path.join(testDir, ...relativePath.split(path.sep)) }, options))
   };
 
 }

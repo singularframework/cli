@@ -6,21 +6,9 @@ import { LogParserClass, LogParser } from './lib/log-parser';
 
 describe('new', function() {
 
-  afterEach('Test cleanup', async function() {
+  afterEach('Test case cleanup (delete test directory)', async function() {
 
-    reporter.progress('Killing all remaining processes if left over');
-
-    // Kill all running processes
-    for ( let i = 0; i < processes.length; i++ ) {
-
-      await kill(processes[i]);
-
-      // Adjust i (since kill removes the process from the array)
-      i--;
-
-    }
-
-    reporter.progress('Removing test directory');
+    reporter.log('Removing test directory');
 
     // Remove test directory
     await fs.remove(path.join(testDir, 'test'));
@@ -68,19 +56,17 @@ describe('new', function() {
     reporter.progress('Building the server');
 
     // Build the server
-    await expect(spawn('node', [
+    await expect(cd('test').spawn('node', [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
       path.join('.', 'src', 'tsconfig.json')
-    ], {
-      cwd: path.join(testDir, 'test')
-    }).promise, 'Server build failed!')
+    ]).promise, 'Server build failed!')
     .to.eventually.not.be.rejected;
 
     reporter.progress('Running the server');
 
     // Run the server
-    const server = spawn('node', [path.join('.', 'dist', 'main.js')], { cwd: path.join(testDir, 'test') });
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
     const logs: LogParser = new LogParserClass(server.ref);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -95,14 +81,14 @@ describe('new', function() {
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
 
     // Expect no errors nor warnings
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
-
     reporter.log('Server warns:', warns.length);
-    warns.forEach(reporter.warn);
+    warns.forEach(text => reporter.warn(text));
 
     reporter.log('Server errors:', errors.length);
-    errors.forEach(reporter.error);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
 
     reporter.progress('Killing the server process');
 
@@ -150,19 +136,17 @@ describe('new', function() {
     reporter.progress('Building the server');
 
     // Build the server
-    await expect(spawn('node', [
+    await expect(cd('test').spawn('node', [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
       path.join('.', 'src', 'tsconfig.json')
-    ], {
-      cwd: path.join(testDir, 'test')
-    }).promise, 'Server build failed!')
+    ]).promise, 'Server build failed!')
     .to.eventually.not.be.rejected;
 
     reporter.progress('Running the server');
 
     // Run the server
-    const server = spawn('node', [path.join('.', 'dist', 'main.js')], { cwd: path.join(testDir, 'test') });
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
     const logs: LogParser = new LogParserClass(server.ref);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -177,14 +161,14 @@ describe('new', function() {
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
 
     // Expect no errors nor warnings
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
-
     reporter.log('Server warns:', warns.length);
-    warns.forEach(reporter.warn);
+    warns.forEach(text => reporter.warn(text));
 
     reporter.log('Server errors:', errors.length);
-    errors.forEach(reporter.error);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
 
     reporter.progress('Killing the server process');
 
@@ -231,24 +215,22 @@ describe('new', function() {
 
     reporter.progress('Manually installing npm dependencies');
 
-    await expect(spawn('npm', ['install'], { cwd: path.join(testDir, 'test') }).promise).to.eventually.have.property('code', 0);
+    await expect(cd('test').spawn('npm', ['install']).promise).to.eventually.have.property('code', 0);
 
     reporter.progress('Building the server');
 
     // Build the server
-    await expect(spawn('node', [
+    await expect(cd('test').spawn('node', [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
       path.join('.', 'src', 'tsconfig.json')
-    ], {
-      cwd: path.join(testDir, 'test')
-    }).promise, 'Server build failed!')
+    ]).promise, 'Server build failed!')
     .to.eventually.not.be.rejected;
 
     reporter.progress('Running the server');
 
     // Run the server
-    const server = spawn('node', [path.join('.', 'dist', 'main.js')], { cwd: path.join(testDir, 'test') });
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
     const logs: LogParser = new LogParserClass(server.ref);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -263,14 +245,14 @@ describe('new', function() {
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
 
     // Expect no errors nor warnings
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
-
     reporter.log('Server warns:', warns.length);
-    warns.forEach(reporter.warn);
+    warns.forEach(text => reporter.warn(text));
 
     reporter.log('Server errors:', errors.length);
-    errors.forEach(reporter.error);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
 
     reporter.progress('Killing the server process');
 
@@ -311,19 +293,17 @@ describe('new', function() {
     reporter.progress('Building the server');
 
     // Build the server
-    await expect(spawn('node', [
+    await expect(cd('test').spawn('node', [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
       path.join('.', 'src', 'tsconfig.json')
-    ], {
-      cwd: path.join(testDir, 'test')
-    }).promise, 'Server build failed!')
+    ]).promise, 'Server build failed!')
     .to.eventually.not.be.rejected;
 
     reporter.progress('Running the server');
 
     // Run the server
-    const server = spawn('node', [path.join('.', 'dist', 'main.js')], { cwd: path.join(testDir, 'test') });
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
     const logs: LogParser = new LogParserClass(server.ref);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -338,14 +318,14 @@ describe('new', function() {
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
 
     // Expect no errors nor warnings
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
-
     reporter.log('Server warns:', warns.length);
-    warns.forEach(reporter.warn);
+    warns.forEach(text => reporter.warn(text));
 
     reporter.log('Server errors:', errors.length);
-    errors.forEach(reporter.error);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
 
     reporter.progress('Killing the server process');
 
@@ -400,19 +380,17 @@ describe('new', function() {
     reporter.progress('Building the server');
 
     // Build the server
-    await expect(spawn('node', [
+    await expect(cd('test').spawn('node', [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
       path.join('.', 'src', 'tsconfig.json')
-    ], {
-      cwd: path.join(testDir, 'test')
-    }).promise, 'Server build failed!')
+    ]).promise, 'Server build failed!')
     .to.eventually.not.be.rejected;
 
     reporter.progress('Running the server');
 
     // Run the server
-    const server = spawn('node', [path.join('.', 'dist', 'main.js')], { cwd: path.join(testDir, 'test') });
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
     const logs: LogParser = new LogParserClass(server.ref);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -427,14 +405,14 @@ describe('new', function() {
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
 
     // Expect no errors nor warnings
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
-
     reporter.log('Server warns:', warns.length);
-    warns.forEach(reporter.warn);
+    warns.forEach(text => reporter.warn(text));
 
     reporter.log('Server errors:', errors.length);
-    errors.forEach(reporter.error);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
 
     reporter.progress('Killing the server process');
 
@@ -489,19 +467,17 @@ describe('new', function() {
     reporter.progress('Building the server');
 
     // Build the server
-    await expect(spawn('node', [
+    await expect(cd('test').spawn('node', [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
       path.join('.', 'src', 'tsconfig.json')
-    ], {
-      cwd: path.join(testDir, 'test')
-    }).promise, 'Server build failed!')
+    ]).promise, 'Server build failed!')
     .to.eventually.not.be.rejected;
 
     reporter.progress('Running the server');
 
     // Run the server
-    const server = spawn('node', [path.join('.', 'dist', 'main.js')], { cwd: path.join(testDir, 'test') });
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
     const logs: LogParser = new LogParserClass(server.ref);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -516,14 +492,14 @@ describe('new', function() {
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
 
     // Expect no errors nor warnings
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
-
     reporter.log('Server warns:', warns.length);
-    warns.forEach(reporter.warn);
+    warns.forEach(text => reporter.warn(text));
 
     reporter.log('Server errors:', errors.length);
-    errors.forEach(reporter.error);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
 
     reporter.progress('Killing the server process');
 
@@ -564,24 +540,22 @@ describe('new', function() {
 
     reporter.progress('Manually installing npm dependencies');
 
-    await expect(spawn('npm', ['install'], { cwd: path.join(testDir, 'test') }).promise).to.eventually.have.property('code', 0);
+    await expect(cd('test').spawn('npm', ['install']).promise).to.eventually.have.property('code', 0);
 
     reporter.progress('Building the server');
 
     // Build the server
-    await expect(spawn('node', [
+    await expect(cd('test').spawn('node', [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
       path.join('.', 'src', 'tsconfig.json')
-    ], {
-      cwd: path.join(testDir, 'test')
-    }).promise, 'Server build failed!')
+    ]).promise, 'Server build failed!')
     .to.eventually.not.be.rejected;
 
     reporter.progress('Running the server');
 
     // Run the server
-    const server = spawn('node', [path.join('.', 'dist', 'main.js')], { cwd: path.join(testDir, 'test') });
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
     const logs: LogParser = new LogParserClass(server.ref);
     const warns: string[] = [];
     const errors: string[] = [];
@@ -596,14 +570,14 @@ describe('new', function() {
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
 
     // Expect no errors nor warnings
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
-
     reporter.log('Server warns:', warns.length);
-    warns.forEach(reporter.warn);
+    warns.forEach(text => reporter.warn(text));
 
     reporter.log('Server errors:', errors.length);
-    errors.forEach(reporter.error);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
 
     reporter.progress('Killing the server process');
 

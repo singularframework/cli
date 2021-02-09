@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import glob from 'glob';
 
 /** Returns true (promise) if all paths exist (relative to testDir). */
-export async function pathsExist(paths: string[]) {
+export async function pathsExist(...paths: string[]) {
 
   let result = true;
 
