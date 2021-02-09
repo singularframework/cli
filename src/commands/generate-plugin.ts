@@ -88,7 +88,7 @@ app
   const spinner = ora().start('Scaffolding plugin package');
 
   // Setup project
-  await fs.mkdirp(path.resolve(process.cwd(), args.name));
+  await fs.mkdirp(path.resolve(process.cwd(), `singular-plugin-${args.name}`));
   await fs.copy(
     path.resolve(__dirname, '..', '..', 'template', 'plugin-package', 'tsconfig.json.mustache'),
     path.resolve(process.cwd(), args.name, 'tsconfig.json')
