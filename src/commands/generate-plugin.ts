@@ -21,13 +21,17 @@ app
 // File shouldn't already exist (if local plugin)
 .validate(value => {
 
-  if ( ! app.data<SgData>().singular ) return;
-
-  return pathDoesntExist(
+  if ( app.data<SgData>().singular ) return pathDoesntExist(
     path.resolve(process.cwd(), 'src', app.data<SgData>()?.singular.project.flat ? '.' : 'plugins'),
     '.plugin.ts'
   )(value);
 
+})
+// Directory shouldn't already exist (if plugin package)
+.validate(value => {
+
+  if ( ! app.data<SgData>().singular ) return pathDoesntExist(process.cwd())(`singular-plugin-${value}`);
+  
 })
 
 .option('-p --package', 'generates a plugin package that can be installed through npm')
