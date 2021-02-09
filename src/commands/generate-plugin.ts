@@ -4,9 +4,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import ora from 'ora';
 import chalk from 'chalk';
+import mustache from 'mustache';
 import { pathDoesntExist } from '../lib/validators';
-import { projectGuard } from '../lib/events';
+import { projectGuard, reverseProjectGuard } from '../lib/events';
 import { generateComponent } from '../lib/components';
+import { spawn } from '../lib/child-process';
 import { SgData } from '../lib/models';
 
 app
@@ -16,8 +18,10 @@ app
 .argument('<name>', 'plugin name')
 // To kebab case
 .sanitize(value => _.kebabCase(value.trim()))
-// File shouldn't already exist
+// File shouldn't already exist (if local plugin)
 .validate(value => {
+
+  if ( ! app.data<SgData>().singular ) return;
 
   return pathDoesntExist(
     path.resolve(process.cwd(), 'src', app.data<SgData>()?.singular.project.flat ? '.' : 'plugins'),
@@ -26,10 +30,24 @@ app
 
 })
 
-// Operation can only be performed in a Singular project
-.on('validators:before', projectGuard)
+.option('-p --package', 'generates a plugin package that can be installed through npm')
+.option('--skip-git', 'avoids creating a git repository (only when creating a plugin package)')
+.option('--skip-npm', 'avoids installing npm dependencies (only when creating a plugin package)')
 
-.action(async args => {
+// Operation can only be performed in a Singular project
+// Unless --package is provided where the exact opposite is true
+.on('validators:before', data => {
+
+  if ( ! data.opts.package ) return projectGuard(data);
+  else return reverseProjectGuard(data);
+
+})
+
+// Will only run for local plugin
+.actionDestruct(async ({ args, opts, suspend }) => {
+
+  // Skip action handler if --package is provided
+  if ( opts.package ) return;
 
   await generateComponent('plugin', args.name);
 
@@ -39,7 +57,7 @@ app
   const pluginClassName = _.flow(_.camelCase, _.upperFirst)(args.name) + 'Plugin';
   const pluginImportSyntax = `\nimport { ${pluginClassName} } from '${pluginPath}';`;
   const pluginInstallSyntax = `.install(${pluginClassName})\n`;
-  const updatedMain= main
+  const updatedMain = main
   .replace(
     /^(.*import[^;]+?from[^;]+?;(?!.*import))(.*Singular[^;]*)(\.launch\(\).*)/s,
     `$1${pluginImportSyntax}$2${pluginInstallSyntax}$3`
@@ -59,5 +77,157 @@ app
     path.resolve(app.data<SgData>().projectRoot, 'src', 'main.ts'),
     updatedMain
   );
+
+  // Skip next action handler
+  suspend();
+
+})
+// Will only run for plugin package
+.action(async (args, opts) => {
+
+  const spinner = ora().start('Scaffolding plugin package');
+
+  // Setup project
+  await fs.mkdirp(path.resolve(process.cwd(), args.name));
+  await fs.copy(
+    path.resolve(__dirname, '..', '..', 'template', 'plugin-package', 'tsconfig.json.mustache'),
+    path.resolve(process.cwd(), args.name, 'tsconfig.json')
+  );
+
+  // Write package.json
+  await fs.writeFile(
+    path.resolve(process.cwd(), args.name, 'package.json'),
+    mustache.render(
+      await fs.readFile(
+        path.resolve(__dirname, '..', '..', 'template', 'plugin-package', 'package.json.mustache'),
+        { encoding: 'utf-8' }
+      ),
+      { componentName: args.name }
+    )
+  );
+
+  // Write plugin.ts
+  await fs.writeFile(
+    path.resolve(process.cwd(), args.name, 'plugin.ts'),
+    mustache.render(
+      await fs.readFile(
+        path.resolve(__dirname, '..', '..', 'template', 'components', 'plugin.ts.mustache'),
+        { encoding: 'utf-8' }
+      ),
+      {
+        componentName: args.name,
+        componentNamePascalCased: _.flow(_.camelCase, _.upperFirst)(args.name)
+      }
+    )
+  );
+
+  spinner.succeed();
+
+  // Initialize npm
+  if ( ! opts.skipNpm ) {
+
+    // npm install
+    spinner.start('Installing dependencies');
+
+    const child = spawn('npm', ['install'], {
+      windowsHide: true,
+      cwd: path.join(process.cwd(), args.name),
+      stdio: ['ignore', 'ignore', 'pipe']
+    });
+
+    const stderrCache: string[] = [];
+    child.ref.stderr.on('data', data => stderrCache.push(chalk.redBright(data)));
+
+    const results = await child.promise;
+
+    if ( results.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(stderrCache.join('\n'));
+
+      process.exit(1);
+
+    }
+
+    spinner.succeed();
+
+  }
+
+  // Initialize git
+  if ( ! opts.skipGit ) {
+
+    spinner.start(`Configuring git`);
+
+    // git init
+    const initChild = spawn('git', ['init'], {
+      windowsHide: true,
+      cwd: path.join(process.cwd(), args.name),
+      stdio: ['ignore', 'ignore', 'pipe']
+    });
+
+    const initStderrCache: string[] = [];
+    initChild.ref.stderr.on('data', data => initStderrCache.push(chalk.redBright(data)));
+
+    const initResults = await initChild.promise;
+
+    if ( initResults.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(initStderrCache.join('\n'));
+
+      process.exit(1);
+
+    }
+
+    // Generate .gitignore
+    await fs.copy(
+      path.join(__dirname, '..', '..', 'template', 'plugin-package', '.gitignore.mustache'),
+      path.join(process.cwd(), args.name, '.gitignore')
+    );
+
+    // Commit
+    const addChild = spawn('git', ['add', '.'], {
+      windowsHide: true,
+      cwd: path.join(process.cwd(), args.name),
+      stdio: ['ignore', 'ignore', 'pipe']
+    });
+
+    const addStderrCache: string[] = [];
+    addChild.ref.stderr.on('data', data => addStderrCache.push(chalk.redBright(data)));
+
+    const addResults = await addChild.promise;
+
+    if ( addResults.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(addStderrCache.join('\n'));
+      process.exit(1);
+
+    }
+
+    const commitChild = spawn('git', ['commit', '-m', '"Singular commit"'], {
+      windowsHide: true,
+      cwd: path.join(process.cwd(), args.name),
+      stdio: ['ignore', 'ignore', 'pipe']
+    });
+
+    const commitStderrCache: string[] = [];
+    commitChild.ref.stderr.on('data', data => commitStderrCache.push(chalk.redBright(data)));
+
+    const commitResults = await commitChild.promise;
+
+    if ( commitResults.code !== 0 ) {
+
+      spinner.fail(chalk.redBright('Could not create project due to an error!'));
+      console.error(commitStderrCache.join('\n'));
+      process.exit(1);
+
+    }
+
+    spinner.succeed();
+
+  }
+
+  spinner.succeed(`Plugin package ${chalk.blueBright(args.name)} was created`);
 
 });

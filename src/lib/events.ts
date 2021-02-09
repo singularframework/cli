@@ -27,3 +27,13 @@ export const projectGuard: Argumental.EventHandler<Argumental.EventData<any>> = 
   if ( ! app.data<SgData>().singular ) exit('Could not locate Singular project!');
 
 };
+
+/** Guards against present singular.json. */
+export const reverseProjectGuard: Argumental.EventHandler<Argumental.EventData<any>> = (data) => {
+
+  // Skip guard if immediate option --help was provided
+  if ( data.opts.help ) return;
+
+  if ( app.data<SgData>().singular ) exit('This command cannot be run inside a Singular project!');
+
+};
