@@ -121,6 +121,9 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
     // Write new package.json
     await fs.writeJson(path.join(singularData.projectRoot, 'dist', 'package.json'), standalonePackageJson, { spaces: 2 });
 
+    // Write .gitignore
+    await fs.writeFile(path.join(singularData.projectRoot, 'dist', '.gitignore'), 'node_modules');
+
     spinner.succeed();
 
   }
