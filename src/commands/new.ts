@@ -101,7 +101,7 @@ app
     spinner.start('Setting up tests');
 
     // Scan all .mustache files in template/test
-    const files = glob.sync('**/*.mustache', { cwd: path.resolve(__dirname, '..', '..', 'template', 'test') });
+    const files = glob.sync('**/*.mustache', { cwd: path.resolve(__dirname, '..', '..', 'template', 'test'), dot: true });
 
     // Copy all files
     for ( const file of files ) {
