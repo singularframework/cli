@@ -29,6 +29,12 @@ describe('generate', function() {
       .replace('dev: {', 'dev: {consoleLogLevels:"all",')
     );
 
+    // Make backup of main.ts
+    await fs.copy(
+      path.join(testDir, 'test', 'src', 'main.ts'),
+      path.join(testDir, 'test', 'src', 'main.ts.backup')
+    );
+
   });
 
   after('Suite cleanup (delete test directory)', async function() {
@@ -219,6 +225,12 @@ describe('generate', function() {
     // Kill the server
     await kill(server.ref);
 
+    // Delete service
+    reporter.progress('Deleting service component');
+
+    await fs.remove(path.join(testDir, 'test', 'src', 'services', 'test.service.ts'));
+    await fs.remove(path.join(testDir, 'test', 'dist', 'services', 'test.service.js'));
+
   });
 
   it('should generate interceptor component correctly', async function() {
@@ -299,6 +311,12 @@ describe('generate', function() {
 
     // Kill the server
     await kill(server.ref);
+
+    // Delete interceptor
+    reporter.progress('Deleting interceptor component');
+
+    await fs.remove(path.join(testDir, 'test', 'src', 'interceptors', 'test.interceptor.ts'));
+    await fs.remove(path.join(testDir, 'test', 'dist', 'interceptors', 'test.interceptor.js'));
 
   });
 
@@ -391,6 +409,401 @@ describe('generate', function() {
 
     // Kill the server
     await kill(server.ref);
+
+    // Delete plugin
+    reporter.progress('Deleting plugin component');
+
+    await fs.remove(path.join(testDir, 'test', 'src', 'plugins', 'test.plugin.ts'));
+    await fs.remove(path.join(testDir, 'test', 'dist', 'plugins', 'test.plugin.js'));
+
+    // Restore original main.ts
+    await fs.copy(
+      path.join(testDir, 'test', 'src', 'main.ts.backup'),
+      path.join(testDir, 'test', 'src', 'main.ts'),
+      { overwrite: true }
+    );
+
+  });
+
+  it('should generate router component in a flat project correctly', async function() {
+
+    // reporter.config({ logs: true });
+
+    this.timeout(60000);
+
+    reporter.progress('Switching to flat project structure');
+
+    // Edit singular.json
+    const singularJson = await fs.readJson(path.join(testDir, 'test', 'singular.json'));
+
+    singularJson.project.flat = true;
+
+    await fs.writeJson(
+      path.join(testDir, 'test', 'singular.json'),
+      singularJson
+    );
+
+    reporter.progress('Executing "sg generate router flat-test"');
+
+    // Execute "sg generate router flat-test"
+    await expect(cd('test').spawn('node', [sgPath, 'generate', 'router', 'flat-test']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking file structure');
+
+    reporter.log([
+      'ls /test/src',
+      ...(await fs.promises.readdir(path.join(testDir, 'test', 'src')))
+    ].join('\n'));
+
+    // Check component file
+    await expect(pathsExist(path.join('test', 'src', 'flat-test.router.ts')))
+    .to.eventually.be.true;
+
+    reporter.progress('Building the server');
+
+    // Build the server
+    await expect(cd('test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '-p',
+      path.join('.', 'src', 'tsconfig.json')
+    ]).promise, 'Server build failed!')
+    .to.eventually.not.be.rejected;
+
+    reporter.progress('Running the server');
+
+    // Run the server
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
+    const logs: LogParser = new LogParserClass(server.ref);
+    const warns: string[] = [];
+    const errors: string[] = [];
+    const debugs: string[] = [];
+
+    // Listen to warnings and errors
+    logs.on('warn', log => warns.push(log.text));
+    logs.on('error', log => errors.push(log.text));
+    logs.on('debug', log => debugs.push(log.text));
+
+    reporter.progress('Waiting for server to initialize');
+
+    // Wait for the startup notice
+    reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
+
+    // Expect no errors, one warning, and specific debug message
+    reporter.log('Server debugs:', debugs.length);
+    debugs.forEach(text => reporter.log(text));
+
+    reporter.log('Server warns:', warns.length);
+    warns.forEach(text => reporter.warn(text));
+
+    reporter.log('Server errors:', errors.length);
+    errors.forEach(text => reporter.error(text));
+
+    expect(debugs).to.include('Router "flat-test" was initialized');
+    expect(warns).to.have.lengthOf(1).and.include('Router "flat-test" has no defined routes!');
+    expect(errors).to.be.empty;
+
+    reporter.progress('Killing the server process');
+
+    // Kill the server
+    await kill(server.ref);
+
+    // Delete router (because the server will throw warning in other test cases)
+    reporter.progress('Deleting router component');
+
+    await fs.remove(path.join(testDir, 'test', 'src', 'flat-test.router.ts'));
+    await fs.remove(path.join(testDir, 'test', 'dist', 'flat-test.router.js'));
+
+  });
+
+  it('should generate service component in a flat project correctly', async function() {
+
+    // reporter.config({ logs: true });
+
+    this.timeout(60000);
+
+    reporter.progress('Switching to flat project structure');
+
+    // Edit singular.json
+    const singularJson = await fs.readJson(path.join(testDir, 'test', 'singular.json'));
+
+    singularJson.project.flat = true;
+
+    await fs.writeJson(
+      path.join(testDir, 'test', 'singular.json'),
+      singularJson
+    );
+
+    reporter.progress('Executing "sg generate service flat-test"');
+
+    // Execute "sg generate service flat-test"
+    await expect(cd('test').spawn('node', [sgPath, 'generate', 'service', 'flat-test']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking file structure');
+
+    reporter.log([
+      'ls /test/src',
+      ...(await fs.promises.readdir(path.join(testDir, 'test', 'src')))
+    ].join('\n'));
+
+    // Check component file
+    await expect(pathsExist(path.join('test', 'src', 'flat-test.service.ts')))
+    .to.eventually.be.true;
+
+    reporter.progress('Building the server');
+
+    // Build the server
+    await expect(cd('test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '-p',
+      path.join('.', 'src', 'tsconfig.json')
+    ]).promise, 'Server build failed!')
+    .to.eventually.not.be.rejected;
+
+    reporter.progress('Running the server');
+
+    // Run the server
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
+    const logs: LogParser = new LogParserClass(server.ref);
+    const warns: string[] = [];
+    const errors: string[] = [];
+    const debugs: string[] = [];
+
+    // Listen to warnings and errors
+    logs.on('warn', log => warns.push(log.text));
+    logs.on('error', log => errors.push(log.text));
+    logs.on('debug', log => debugs.push(log.text));
+
+    reporter.progress('Waiting for server to initialize');
+
+    // Wait for the startup notice
+    reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
+
+    // Expect no errors nor warnings, and specific debug message
+    reporter.log('Server debugs:', debugs.length);
+    debugs.forEach(text => reporter.log(text));
+
+    reporter.log('Server warns:', warns.length);
+    warns.forEach(text => reporter.warn(text));
+
+    reporter.log('Server errors:', errors.length);
+    errors.forEach(text => reporter.error(text));
+
+    expect(debugs).to.include('Service "flat-test" was initialized');
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
+
+    reporter.progress('Killing the server process');
+
+    // Kill the server
+    await kill(server.ref);
+
+    // Delete service
+    reporter.progress('Deleting service component');
+
+    await fs.remove(path.join(testDir, 'test', 'src', 'flat-test.service.ts'));
+    await fs.remove(path.join(testDir, 'test', 'dist', 'flat-test.service.js'));
+
+  });
+
+  it('should generate interceptor component in a flat project correctly', async function() {
+
+    // reporter.config({ logs: true });
+
+    this.timeout(60000);
+
+    reporter.progress('Switching to flat project structure');
+
+    // Edit singular.json
+    const singularJson = await fs.readJson(path.join(testDir, 'test', 'singular.json'));
+
+    singularJson.project.flat = true;
+
+    await fs.writeJson(
+      path.join(testDir, 'test', 'singular.json'),
+      singularJson
+    );
+
+    reporter.progress('Executing "sg generate interceptor flat-test"');
+
+    // Execute "sg generate interceptor flat-test"
+    await expect(cd('test').spawn('node', [sgPath, 'generate', 'interceptor', 'flat-test']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking file structure');
+
+    reporter.log([
+      'ls /test/src',
+      ...(await fs.promises.readdir(path.join(testDir, 'test', 'src')))
+    ].join('\n'));
+
+    // Check component file
+    await expect(pathsExist(path.join('test', 'src', 'flat-test.interceptor.ts')))
+    .to.eventually.be.true;
+
+    reporter.progress('Building the server');
+
+    // Build the server
+    await expect(cd('test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '-p',
+      path.join('.', 'src', 'tsconfig.json')
+    ]).promise, 'Server build failed!')
+    .to.eventually.not.be.rejected;
+
+    reporter.progress('Running the server');
+
+    // Run the server
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
+    const logs: LogParser = new LogParserClass(server.ref);
+    const warns: string[] = [];
+    const errors: string[] = [];
+    const debugs: string[] = [];
+
+    // Listen to warnings and errors
+    logs.on('warn', log => warns.push(log.text));
+    logs.on('error', log => errors.push(log.text));
+    logs.on('debug', log => debugs.push(log.text));
+
+    reporter.progress('Waiting for server to initialize');
+
+    // Wait for the startup notice
+    reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
+
+    // Expect no errors nor warnings, and specific debug message
+    reporter.log('Server debugs:', debugs.length);
+    debugs.forEach(text => reporter.log(text));
+
+    reporter.log('Server warns:', warns.length);
+    warns.forEach(text => reporter.warn(text));
+
+    reporter.log('Server errors:', errors.length);
+    errors.forEach(text => reporter.error(text));
+
+    expect(debugs).to.include('Interceptor "flat-test" installed');
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
+
+    reporter.progress('Killing the server process');
+
+    // Kill the server
+    await kill(server.ref);
+
+    // Delete interceptor
+    reporter.progress('Deleting interceptor component');
+
+    await fs.remove(path.join(testDir, 'test', 'src', 'flat-test.interceptor.ts'));
+    await fs.remove(path.join(testDir, 'test', 'dist', 'flat-test.interceptor.js'));
+
+  });
+
+  it('should generate plugin component in a flat project correctly', async function() {
+
+    // reporter.config({ logs: true });
+
+    this.timeout(60000);
+
+    reporter.progress('Switching to flat project structure');
+
+    // Edit singular.json
+    const singularJson = await fs.readJson(path.join(testDir, 'test', 'singular.json'));
+
+    singularJson.project.flat = true;
+
+    await fs.writeJson(
+      path.join(testDir, 'test', 'singular.json'),
+      singularJson
+    );
+
+    reporter.progress('Executing "sg generate plugin flat-test"');
+
+    // Execute "sg generate plugin flat-test"
+    await expect(cd('test').spawn('node', [sgPath, 'generate', 'plugin', 'flat-test']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking file structure');
+
+    reporter.log([
+      'ls /test/src',
+      ...(await fs.promises.readdir(path.join(testDir, 'test', 'src')))
+    ].join('\n'));
+
+    // Check component file
+    await expect(pathsExist(path.join('test', 'src', 'flat-test.plugin.ts')))
+    .to.eventually.be.true;
+
+    // Edit plugin
+    await fs.writeFile(
+      path.join(testDir, 'test', 'src', 'flat-test.plugin.ts'),
+      (await fs.readFile(path.join(testDir, 'test', 'src', 'flat-test.plugin.ts'), { encoding: 'utf-8' }))
+      .replace(
+        'beforeLaunch(log: PluginLogger, data: PluginDataBeforeLaunch): void { }',
+        'beforeLaunch(log: PluginLogger, data: PluginDataBeforeLaunch): void { log.debug("Plugin working"); }'
+      )
+    );
+
+    reporter.progress('Building the server');
+
+    // Build the server
+    await expect(cd('test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '-p',
+      path.join('.', 'src', 'tsconfig.json')
+    ]).promise, 'Server build failed!')
+    .to.eventually.not.be.rejected;
+
+    reporter.progress('Running the server');
+
+    // Run the server
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
+    const logs: LogParser = new LogParserClass(server.ref);
+    const warns: string[] = [];
+    const errors: string[] = [];
+    const debugs: string[] = [];
+
+    // Listen to warnings and errors
+    logs.on('warn', log => warns.push(log.text));
+    logs.on('error', log => errors.push(log.text));
+    logs.on('debug', log => debugs.push(log.text));
+
+    reporter.progress('Waiting for server to initialize');
+
+    // Wait for the startup notice
+    reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
+
+    // Expect no errors nor warnings, and specific debug message
+    reporter.log('Server debugs:', debugs.length);
+    debugs.forEach(text => reporter.log(text));
+
+    reporter.log('Server warns:', warns.length);
+    warns.forEach(text => reporter.warn(text));
+
+    reporter.log('Server errors:', errors.length);
+    errors.forEach(text => reporter.error(text));
+
+    expect(debugs).to.include('Plugin "flat-test" was installed');
+    expect(debugs).to.include('Plugin working');
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
+
+    reporter.progress('Killing the server process');
+
+    // Kill the server
+    await kill(server.ref);
+
+    // Delete plugin
+    reporter.progress('Deleting plugin component');
+
+    await fs.remove(path.join(testDir, 'test', 'src', 'flat-test.plugin.ts'));
+    await fs.remove(path.join(testDir, 'test', 'dist', 'flat-test.plugin.js'));
+
+    // Restore original main.ts
+    await fs.copy(
+      path.join(testDir, 'test', 'src', 'main.ts.backup'),
+      path.join(testDir, 'test', 'src', 'main.ts'),
+      { overwrite: true }
+    );
 
   });
 
