@@ -70,6 +70,7 @@
     "@types/source-map-support": "^0.5.3",
     "chai": "^4.3.0",
     "chai-as-promised": "^7.1.1",
+    "got": "^11.8.1",
     "luxon": "^1.25.0",
     "mocha": "^8.2.1",
     "mocha-progress-reporter": "^1.1.3",
