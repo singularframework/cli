@@ -18,6 +18,6 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
-  await build(app.data<SgData>(), opts.prod ?? opts.minify, opts.prod ?? opts.standalone, opts.prod ? 'prod' : opts.profile);
+  await build(app.data<SgData>(), opts.prod || opts.minify, opts.prod || opts.standalone, opts.prod ? 'prod' : opts.profile);
 
 });
