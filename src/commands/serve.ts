@@ -10,7 +10,7 @@ app
 
 .option('-p --profile <config_profile>', 'sets the config profile before launching the server (defaults to dev)')
 .validate(app.STRING)
-.option('--prod', 'shorthand for --profile prod (will be ignored if --profile is provided)')
+.option('--prod', 'shorthand for "-p prod" (will be ignored if -p is provided)')
 .option('--skip-build', 'skips building the server')
 .option('-w --watch', 'enables hot reloading')
 .option('-m --minify', 'minifies the build (if not skipped)')

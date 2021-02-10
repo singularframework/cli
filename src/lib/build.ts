@@ -8,7 +8,7 @@ import { spawn } from './child-process';
 import { SgData } from './models';
 
 /** Builds the source code into dist. */
-export async function build(singularData: SgData, minify?: boolean) {
+export async function build(singularData: SgData, minify?: boolean, standalone?: boolean, profile?: string) {
 
   const spinner = ora();
 
@@ -65,6 +65,61 @@ export async function build(singularData: SgData, minify?: boolean) {
       );
 
     }
+
+    spinner.succeed();
+
+  }
+
+  // Force config profile if asked
+  if ( profile ) {
+
+    spinner.start(`Forcing config profile "${profile}"`);
+
+    // Edit main.ts (before minification)
+    const main = await fs.readFile(path.join(singularData.projectRoot, 'dist', 'main.js'), { encoding: 'utf-8' });
+    const match = main.match(/^(?<before>.+Singular\s+.*\.launch\()(?<profile>.*?)(?<after>\).+)$/s);
+
+    if ( ! match ) {
+
+      spinner.fail();
+
+      ora().stopAndPersist({
+        text: chalk.yellow(`Could not update "${path.join('dist', 'main.js')}"!`),
+        symbol: chalk.yellow('!')
+      });
+
+    }
+    else {
+
+      // Update main.js
+      await fs.writeFile(
+        path.join(singularData.projectRoot, 'dist', 'main.js'),
+        match.groups.before + `'${profile}'` + match.groups.after
+      );
+
+      spinner.succeed();
+
+    }
+
+  }
+
+  // Make standalone if asked
+  if ( standalone ) {
+
+    spinner.start('Making build standalone');
+
+    // Load package.json
+    const packageJson = await fs.readJson(path.join(singularData.projectRoot, 'package.json'));
+    // Create new package.json
+    const standalonePackageJson = {
+      name: packageJson.name,
+      version: packageJson.version,
+      main: 'main.js',
+      dependencies: packageJson.dependencies
+    };
+
+    // Write new package.json
+    await fs.writeJson(path.join(singularData.projectRoot, 'dist', 'package.json'), standalonePackageJson, { spaces: 2 });
 
     spinner.succeed();
 
