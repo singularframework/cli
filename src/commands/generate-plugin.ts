@@ -31,7 +31,7 @@ app
 .validate(value => {
 
   if ( ! app.data<SgData>().singular ) return pathDoesntExist(process.cwd())(`singular-plugin-${value}`);
-  
+
 })
 
 .option('-p --package', 'generates a plugin package that can be installed through npm')
@@ -95,12 +95,12 @@ app
   await fs.mkdirp(path.resolve(process.cwd(), `singular-plugin-${args.name}`));
   await fs.copy(
     path.resolve(__dirname, '..', '..', 'template', 'plugin-package', 'tsconfig.json.mustache'),
-    path.resolve(process.cwd(), args.name, 'tsconfig.json')
+    path.resolve(process.cwd(), `singular-plugin-${args.name}`, 'tsconfig.json')
   );
 
   // Write package.json
   await fs.writeFile(
-    path.resolve(process.cwd(), args.name, 'package.json'),
+    path.resolve(process.cwd(), `singular-plugin-${args.name}`, 'package.json'),
     mustache.render(
       await fs.readFile(
         path.resolve(__dirname, '..', '..', 'template', 'plugin-package', 'package.json.mustache'),
@@ -112,7 +112,7 @@ app
 
   // Write plugin.ts
   await fs.writeFile(
-    path.resolve(process.cwd(), args.name, 'plugin.ts'),
+    path.resolve(process.cwd(), `singular-plugin-${args.name}`, 'plugin.ts'),
     mustache.render(
       await fs.readFile(
         path.resolve(__dirname, '..', '..', 'template', 'components', 'plugin.ts.mustache'),
@@ -135,7 +135,7 @@ app
 
     const child = spawn('npm', ['install'], {
       windowsHide: true,
-      cwd: path.join(process.cwd(), args.name),
+      cwd: path.join(process.cwd(), `singular-plugin-${args.name}`),
       stdio: ['ignore', 'ignore', 'pipe']
     });
 
@@ -165,7 +165,7 @@ app
     // git init
     const initChild = spawn('git', ['init'], {
       windowsHide: true,
-      cwd: path.join(process.cwd(), args.name),
+      cwd: path.join(process.cwd(), `singular-plugin-${args.name}`),
       stdio: ['ignore', 'ignore', 'pipe']
     });
 
@@ -186,13 +186,13 @@ app
     // Generate .gitignore
     await fs.copy(
       path.join(__dirname, '..', '..', 'template', 'plugin-package', '.gitignore.mustache'),
-      path.join(process.cwd(), args.name, '.gitignore')
+      path.join(process.cwd(), `singular-plugin-${args.name}`, '.gitignore')
     );
 
     // Commit
     const addChild = spawn('git', ['add', '.'], {
       windowsHide: true,
-      cwd: path.join(process.cwd(), args.name),
+      cwd: path.join(process.cwd(), `singular-plugin-${args.name}`),
       stdio: ['ignore', 'ignore', 'pipe']
     });
 
@@ -211,7 +211,7 @@ app
 
     const commitChild = spawn('git', ['commit', '-m', '"Singular commit"'], {
       windowsHide: true,
-      cwd: path.join(process.cwd(), args.name),
+      cwd: path.join(process.cwd(), `singular-plugin-${args.name}`),
       stdio: ['ignore', 'ignore', 'pipe']
     });
 
@@ -232,6 +232,6 @@ app
 
   }
 
-  spinner.succeed(`Plugin package ${chalk.blueBright(args.name)} was created`);
+  spinner.succeed(`Plugin package ${chalk.blueBright(`singular-plugin-${args.name}`)} was created`);
 
 });

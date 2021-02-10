@@ -5,6 +5,6 @@ export function exit(error?: string|Error) {
 
   if ( error ) app.error(error);
 
-  process.exit();
+  process.exit(1);
 
 }
