@@ -42,6 +42,7 @@ before('Test preparation', async function() {
 // Import tests
 import './new.spec';
 import './generate.spec';
+import './build.spec';
 
 afterEach('Reporter log reset (turn off)', function() {
 
