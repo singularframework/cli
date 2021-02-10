@@ -2,7 +2,7 @@ import app from 'argumental';
 import _ from 'lodash';
 import path from 'path';
 import fs from 'fs-extra';
-import ora from 'ora';
+import Spinner from '../lib/spinner';
 import chalk from 'chalk';
 import mustache from 'mustache';
 import { pathDoesntExist } from '../lib/validators';
@@ -70,10 +70,7 @@ app
   // If regex failed
   if ( main === updatedMain ) {
 
-    ora().stopAndPersist({
-      text: chalk.yellow(`Could not update "${path.join('src', 'main.ts')}"! Plugin must be manually installed.`),
-      symbol: chalk.yellow('!')
-    });
+    new Spinner().warn(chalk.yellow(`Could not update "${path.join('src', 'main.ts')}"! Plugin must be manually installed.`));
 
   }
 
@@ -89,7 +86,7 @@ app
 // Will only run for plugin package
 .action(async (args, opts) => {
 
-  const spinner = ora().start('Scaffolding plugin package');
+  const spinner = new Spinner().start('Scaffolding plugin package');
 
   // Setup project
   await fs.mkdirp(path.resolve(process.cwd(), `singular-plugin-${args.name}`));

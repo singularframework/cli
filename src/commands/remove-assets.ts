@@ -1,7 +1,7 @@
 import app from 'argumental';
 import { saveSingularJson, projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
-import ora from 'ora';
+import Spinner from '../lib/spinner';
 import chalk from 'chalk';
 
 app
@@ -29,16 +29,13 @@ app
     }
     else {
 
-      ora().stopAndPersist({
-        text: `Path ${chalk.yellow(path)} is not registered!`,
-        symbol: chalk.yellow('!')
-      });
+      new Spinner().warn(`Path ${chalk.yellow(path)} is not registered!`);
 
     }
 
   }
 
-  ora().succeed('Assets are removed');
+  new Spinner().succeed('Assets are removed');
 
 })
 

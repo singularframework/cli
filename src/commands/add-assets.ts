@@ -2,7 +2,7 @@ import app from 'argumental';
 import path from 'path';
 import { saveSingularJson, projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
-import ora from 'ora';
+import Spinner from '../lib/spinner';
 
 app
 .command('add assets', 'registers paths as assets to be copied during builds')
@@ -31,7 +31,7 @@ app
   app.data<SgData>().singular.project.assets = app.data<SgData>().singular.project.assets
   .concat(...args.paths.filter((path: string) => ! app.data<SgData>().singular.project.assets.includes(path)));
 
-  ora().succeed('Assets are registered');
+  new Spinner().succeed('Assets are registered');
 
 })
 

@@ -6,7 +6,7 @@ import { spawn } from '../lib/child-process';
 import mustache from 'mustache';
 import { pathDoesntExist } from '../lib/validators';
 import { SgData } from '../lib/models';
-import ora from 'ora';
+import Spinner from '../lib/spinner';
 import chalk from 'chalk';
 import glob from 'glob';
 
@@ -28,7 +28,7 @@ app
 
 .action(async (args, opts) => {
 
-  const spinner = ora().start();
+  const spinner = new Spinner().start();
 
   // Create project directory
   spinner.text = `Creating project directory`;

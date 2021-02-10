@@ -5,7 +5,7 @@ import http from 'http';
 import { spawn } from '../lib/child-process';
 import { projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
-import ora from 'ora';
+import Spinner from '../lib/spinner';
 import chalk from 'chalk';
 
 app
@@ -21,7 +21,7 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
-  const spinner = ora();
+  const spinner = new Spinner();
 
   // If docs is disabled
   if ( ! app.data<SgData>().singular.project.docs ) {

@@ -3,7 +3,7 @@ import { projectGuard } from '../lib/events';
 import { build } from '../lib/build';
 import { SgData } from '../lib/models';
 import { spawn } from '../lib/child-process';
-import ora from 'ora';
+import Spinner from '../lib/spinner';
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs-extra';
@@ -23,7 +23,7 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
-  const spinner = ora();
+  const spinner = new Spinner();
 
   // If tests are disabled for this project
   if ( ! app.data<SgData>().singular.project.tests ) {
@@ -89,10 +89,7 @@ app
   process.env.SINGULAR_CONFIG_PROFILE = opts.profile ?? 'test';
 
   // Run tests
-  ora().stopAndPersist({
-    text: chalk.blueBright(`Tests are being run`),
-    symbol: chalk.blueBright('i')
-  });
+  spinner.info(chalk.blueBright(`Tests are being run`));
 
   spawn(
     'node',

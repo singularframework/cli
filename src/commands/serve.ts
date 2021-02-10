@@ -3,6 +3,7 @@ import chokidar from 'chokidar';
 import { projectGuard } from '../lib/events';
 import { SgData } from '../lib/models';
 import { Server } from '../lib/server';
+import Spinner from '../lib/spinner';
 
 app
 .command('serve', 'runs the server')
@@ -92,6 +93,8 @@ app
     .on('add', () => server.reload(! opts.skipBuild))
     .on('change', () => server.reload(! opts.skipBuild))
     .on('unlink', () => server.reload(! opts.skipBuild));
+
+    new Spinner().info('Hot reloading enabled');
 
   }
 

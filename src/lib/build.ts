@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import terser from 'terser';
 import glob from 'glob';
-import ora from 'ora';
+import Spinner from './spinner';
 import chalk from 'chalk';
 import { spawn } from './child-process';
 import { SgData } from './models';
@@ -10,7 +10,7 @@ import { SgData } from './models';
 /** Builds the source code into dist. */
 export async function build(singularData: SgData, minify?: boolean, standalone?: boolean, profile?: string) {
 
-  const spinner = ora();
+  const spinner = new Spinner();
 
   // Clean up
   spinner.start('Cleaning up');
@@ -82,11 +82,7 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
     if ( ! match ) {
 
       spinner.fail();
-
-      ora().stopAndPersist({
-        text: chalk.yellow(`Could not update "${path.join('dist', 'main.js')}"!`),
-        symbol: chalk.yellow('!')
-      });
+      spinner.warn(`Could not update "${path.join('dist', 'main.js')}"!`);
 
     }
     else {

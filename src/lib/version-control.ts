@@ -2,7 +2,7 @@ import app from 'argumental';
 import path from 'path';
 import fs from 'fs-extra';
 import semver from 'semver';
-import ora from 'ora';
+import Spinner from './spinner';
 import chalk from 'chalk';
 import { spawn } from './child-process';
 import { SgData } from './models';
@@ -66,10 +66,7 @@ export async function versionControl() {
     if ( ! data.singular.useLocal || ! await fs.pathExists(localPath) ) {
 
       // Warn
-      ora().stopAndPersist({
-        text: chalk.yellow('This project was generated using an incompatible CLI version! A local version will be installed and used instead.'),
-        symbol: chalk.yellow('!')
-      });
+      new Spinner().warn(chalk.yellow('This project was generated using an incompatible CLI version! A local version will be installed and used instead.'));
 
       // Update singular.json and app data
       delete data.singular.useLocal;
@@ -93,7 +90,7 @@ export async function versionControl() {
 
       if ( results.code !== 0 ) {
 
-        ora().fail(chalk.redBright('Could not install local CLI!'));
+        new Spinner().fail(chalk.redBright('Could not install local CLI!'));
         console.error(stderrCache.join('\n'));
 
         process.exit(1);
@@ -103,10 +100,7 @@ export async function versionControl() {
     }
 
     // Delegate the command to local CLI
-    ora().stopAndPersist({
-      text: chalk.blueBright(`Using local @singular/cli${chalk.yellow(`@${data.singular.cli}`)}`),
-      symbol: chalk.blueBright('i')
-    });
+    new Spinner().info(`Using local @singular/cli${chalk.yellow(`@${data.singular.cli}`)}`);
 
     process.exit((await delegate(localPath, data.projectRoot)).code);
 
