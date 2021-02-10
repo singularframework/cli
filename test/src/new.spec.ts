@@ -19,7 +19,7 @@ describe('new', function() {
 
     // reporter.config({ logs: true });
 
-    // Set timeout to 3 minutes
+    // Set timeout to 2 minutes
     this.timeout(120000);
 
     reporter.progress('Executing "sg new" command');
@@ -101,7 +101,7 @@ describe('new', function() {
 
     // reporter.config({ logs: true });
 
-    // Set timeout to 3 minutes
+    // Set timeout to 2 minutes
     this.timeout(120000);
 
     reporter.progress('Executing "sg new --skip-git" command');
@@ -181,7 +181,7 @@ describe('new', function() {
 
     // reporter.config({ logs: true });
 
-    // Set timeout to 3 minutes
+    // Set timeout to 2 minutes
     this.timeout(120000);
 
     reporter.progress('Executing "sg new --skip-npm" command');
@@ -265,7 +265,7 @@ describe('new', function() {
 
     // reporter.config({ logs: true });
 
-    // Set timeout to 3 minutes
+    // Set timeout to 2 minutes
     this.timeout(120000);
 
     reporter.progress('Executing "sg new --skip-tests" command');
@@ -343,7 +343,7 @@ describe('new', function() {
 
     // reporter.config({ logs: true });
 
-    // Set timeout to 3 minutes
+    // Set timeout to 2 minutes
     this.timeout(120000);
 
     reporter.progress('Executing "sg new --skip-docs" command');
@@ -430,7 +430,7 @@ describe('new', function() {
 
     // reporter.config({ logs: true });
 
-    // Set timeout to 3 minutes
+    // Set timeout to 2 minutes
     this.timeout(120000);
 
     reporter.progress('Executing "sg new --flat" command');
@@ -517,7 +517,7 @@ describe('new', function() {
 
     // reporter.config({ logs: true });
 
-    // Set timeout to 3 minutes
+    // Set timeout to 2 minutes
     this.timeout(120000);
 
     reporter.progress('Executing "sg new --flat --skip-tests --skip-npm --skip-git --skip-docs" command');
@@ -594,6 +594,32 @@ describe('new', function() {
       "flat": true,
       "assets": []
     });
+
+  });
+
+  it('should refuse to scaffold new project when directory with the same name exists', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    reporter.progress('Creating decoy project');
+
+    // Create decoy project
+    await fs.mkdirp(path.join(testDir, 'test'));
+
+    // Execute "sg new test"
+    reporter.progress('Executing "sg new" command');
+
+    const child = spawn('node', [sgPath, 'new', 'test']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('already exists!');
 
   });
 

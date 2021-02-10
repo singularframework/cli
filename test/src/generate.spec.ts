@@ -1,4 +1,4 @@
-import { pathsExist } from './lib/file-util';
+import { pathsExist, hasStructure } from './lib/file-util';
 import { LogParser, LogParserClass } from './lib/log-parser';
 import fs from 'fs-extra';
 import path from 'path';
@@ -10,7 +10,7 @@ describe('generate', function() {
 
     // reporter.config({ logs: true });
 
-    this.timeout(60000);
+    this.timeout(120000);
 
     reporter.progress('Executing "sg new test" command');
     reporter.log('Executing "sg new test" command');
@@ -33,10 +33,23 @@ describe('generate', function() {
 
   after('Suite cleanup (delete test directory)', async function() {
 
+    // reporter.config({ logs: true });
+
     reporter.log('Removing test directory');
 
     // Remove test directory
     await fs.remove(path.join(testDir, 'test'));
+
+  });
+
+  afterEach('Test case cleanup (delete plugin directory)', async function() {
+
+    // reporter.config({ logs: true });
+
+    reporter.log('Removing singular-plugin-test directory');
+
+    // Remove plugin directory
+    await fs.remove(path.join(testDir, 'singular-plugin-test'));
 
   });
 
@@ -378,6 +391,287 @@ describe('generate', function() {
 
     // Kill the server
     await kill(server.ref);
+
+  });
+
+  it('should refuse to generate router component outside a Singular project', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    // Execute "sg generate router test"
+    reporter.progress('Executing "sg generate router test" command');
+
+    const child = spawn('node', [sgPath, 'generate', 'router', 'test']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('Could not locate Singular project!');
+
+  });
+
+  it('should refuse to generate service component outside a Singular project', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    // Execute "sg generate service test"
+    reporter.progress('Executing "sg generate service test" command');
+
+    const child = spawn('node', [sgPath, 'generate', 'service', 'test']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('Could not locate Singular project!');
+
+  });
+
+  it('should refuse to generate interceptor component outside a Singular project', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    // Execute "sg generate interceptor test"
+    reporter.progress('Executing "sg generate interceptor test" command');
+
+    const child = spawn('node', [sgPath, 'generate', 'interceptor', 'test']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('Could not locate Singular project!');
+
+  });
+
+  it('should refuse to generate plugin component outside a Singular project', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    // Execute "sg generate plugin test"
+    reporter.progress('Executing "sg generate plugin test" command');
+
+    const child = spawn('node', [sgPath, 'generate', 'plugin', 'test']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('Could not locate Singular project!');
+
+  });
+
+  it('should generate a complete plugin package correctly', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    reporter.progress('Executing "sg generate plugin -p" command');
+
+    // Execute sg generate plugin -p
+    await expect(spawn('node', [sgPath, 'generate', 'plugin', 'test', '-p']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking project structure');
+
+    // Check project structure
+    hasStructure(path.join(testDir, 'singular-plugin-test'), [
+      '.git',
+      '.gitignore',
+      'node_modules',
+      'package.json',
+      'package-lock.json',
+      'plugin.ts',
+      'tsconfig.json'
+    ], true);
+
+    reporter.progress('Building the plugin');
+
+    // Build the plugin
+    await expect(cd('singular-plugin-test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '--build'
+    ]).promise, 'Plugin build failed!')
+    .to.eventually.not.be.rejected;
+
+  });
+
+  it('should generate a plugin package correctly without npm', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    reporter.progress('Executing "sg generate plugin -p --skip-npm" command');
+
+    // Execute sg generate plugin -p --skip-npm
+    await expect(spawn('node', [sgPath, 'generate', 'plugin', 'test', '-p', '--skip-npm']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking project structure');
+
+    // Check project structure
+    hasStructure(path.join(testDir, 'singular-plugin-test'), [
+      '.git',
+      '.gitignore',
+      'package.json',
+      'plugin.ts',
+      'tsconfig.json'
+    ], true);
+
+    reporter.progress('Manually installing dependencies');
+
+    await expect(cd('singular-plugin-test').spawn('npm', ['install']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Building the plugin');
+
+    // Build the plugin
+    await expect(cd('singular-plugin-test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '--build'
+    ]).promise, 'Plugin build failed!')
+    .to.eventually.not.be.rejected;
+
+  });
+
+  it('should generate a plugin package correctly without git', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    reporter.progress('Executing "sg generate plugin -p --skip-git" command');
+
+    // Execute sg generate plugin -p --skip-git
+    await expect(spawn('node', [sgPath, 'generate', 'plugin', 'test', '-p', '--skip-git']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking project structure');
+
+    // Check project structure
+    hasStructure(path.join(testDir, 'singular-plugin-test'), [
+      'node_modules',
+      'package.json',
+      'package-lock.json',
+      'plugin.ts',
+      'tsconfig.json'
+    ], true);
+
+    reporter.progress('Building the plugin');
+
+    // Build the plugin
+    await expect(cd('singular-plugin-test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '--build'
+    ]).promise, 'Plugin build failed!')
+    .to.eventually.not.be.rejected;
+
+  });
+
+  it('should generate a plugin package correctly with all the flags', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    reporter.progress('Executing "sg generate plugin -p --skip-npm --skip-git" command');
+
+    // Execute sg generate plugin -p --skip-npm --skip-git
+    await expect(spawn('node', [sgPath, 'generate', 'plugin', 'test', '-p', '--skip-npm', '--skip-git']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking project structure');
+
+    // Check project structure
+    hasStructure(path.join(testDir, 'singular-plugin-test'), [
+      'package.json',
+      'plugin.ts',
+      'tsconfig.json'
+    ], true);
+
+    reporter.progress('Manually installing dependencies');
+
+    await expect(cd('singular-plugin-test').spawn('npm', ['install']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Building the plugin');
+
+    // Build the plugin
+    await expect(cd('singular-plugin-test').spawn('node', [
+      path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
+      '--build'
+    ]).promise, 'Plugin build failed!')
+    .to.eventually.not.be.rejected;
+
+  });
+
+  it('should refuse to generate a plugin package inside a Singular project', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    // Execute "sg generate plugin -p test"
+    reporter.progress('Executing "sg generate plugin -p test" command');
+
+    const child = cd('test').spawn('node', [sgPath, 'generate', 'plugin', '-p', 'test']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('This command cannot be run inside a Singular project!');
+
+  });
+
+  it('should refuse to generate a plugin package when directory with the same name exists', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    reporter.progress('Creating decoy plugin package');
+
+    // Create decoy project
+    await fs.mkdirp(path.join(testDir, 'singular-plugin-test'));
+
+    // Execute "sg generate plugin -p test"
+    reporter.progress('Executing "sg generate plugin test -p" command');
+
+    const child = spawn('node', [sgPath, 'generate', 'plugin', 'test', '-p']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('already exists!');
 
   });
 
