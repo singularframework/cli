@@ -1,3 +1,4 @@
+import { hasStructure } from './lib/file-util';
 import { LogParser, LogParserClass } from './lib/log-parser';
 import fs from 'fs-extra';
 import path from 'path';
@@ -26,6 +27,14 @@ describe('build', function() {
       path.join(testDir, 'test', 'src', 'server.config.ts'),
       (await fs.readFile(path.join(testDir, 'test', 'src', 'server.config.ts'), { encoding: 'utf-8' }))
       .replace('dev: {', 'dev: {consoleLogLevels:"all",')
+      .replace(/prod: {.+?}/s, 'prod: {port:5001,consoleLogLevels:"all"},custom:{port:6003,consoleLogLevels:"all"}')
+    );
+
+    // Update main.ts to register 'custom' profile
+    await fs.writeFile(
+      path.join(testDir, 'test', 'src', 'main.ts'),
+      (await fs.readFile(path.join(testDir, 'test', 'src', 'main.ts'), { encoding: 'utf-8' }))
+      .replace('.launch', '.config(\'custom\', profiles.custom).launch')
     );
 
   });
@@ -133,6 +142,181 @@ describe('build', function() {
 
     // Wait for the startup notice
     reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
+
+    // Expect no errors nor warnings
+    reporter.log('Server warns:', warns.length);
+    warns.forEach(text => reporter.warn(text));
+
+    reporter.log('Server errors:', errors.length);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
+
+    reporter.progress('Killing the server process');
+
+    // Kill the server
+    await kill(server.ref);
+
+  });
+
+  it('should build the server correctly as a standalone', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 2 minutes
+    this.timeout(120000);
+
+    reporter.progress('Executing "sg build --standalone"');
+
+    // Execute "sg build --standalone"
+    await expect(cd('test').spawn('node', [sgPath, 'build', '--standalone']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking build structure');
+
+    hasStructure(path.join(testDir, 'test', 'dist'), [
+      'main.js',
+      'server.config.js',
+      'tsconfig.json',
+      'package.json',
+      '.gitignore'
+    ], true);
+
+    reporter.progress('Manually installing dependencies');
+
+    // Install dependencies
+    await expect(cd('test/dist').spawn('npm', ['install']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Running the server');
+
+    // Run the server
+    const server = cd('test/dist').spawn('node', [path.join('main.js')]);
+    const logs: LogParser = new LogParserClass(server.ref);
+    const warns: string[] = [];
+    const errors: string[] = [];
+
+    // Listen to warnings and errors
+    logs.on('warn', log => warns.push(log.text));
+    logs.on('error', log => errors.push(log.text));
+
+    reporter.progress('Waiting for server to initialize');
+
+    // Wait for the startup notice
+    reporter.log('Got server notice', (await logs.next('startup', 'notice')).text);
+
+    // Expect no errors nor warnings
+    reporter.log('Server warns:', warns.length);
+    warns.forEach(text => reporter.warn(text));
+
+    reporter.log('Server errors:', errors.length);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
+
+    reporter.progress('Killing the server process');
+
+    // Kill the server
+    await kill(server.ref);
+
+  });
+
+  it('should build the server with a forced config profile correctly', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 10 seconds
+    this.timeout(10000);
+
+    reporter.progress('Executing "sg build --profile custom"');
+
+    // Execute "sg build --profile custom"
+    await expect(cd('test').spawn('node', [sgPath, 'build', '--profile', 'custom']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Running the server');
+
+    // Run the server
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
+    const logs: LogParser = new LogParserClass(server.ref);
+    const warns: string[] = [];
+    const errors: string[] = [];
+
+    // Listen to warnings and errors
+    logs.on('warn', log => warns.push(log.text));
+    logs.on('error', log => errors.push(log.text));
+
+    reporter.progress('Waiting for server to initialize');
+
+    // Wait for the startup notice
+    const notice = (await logs.next('startup', 'notice')).text;
+
+    reporter.log('Got server notice', notice);
+
+    // Expect exact port number
+    expect(notice).to.include('6003');
+
+    // Expect no errors nor warnings
+    reporter.log('Server warns:', warns.length);
+    warns.forEach(text => reporter.warn(text));
+
+    reporter.log('Server errors:', errors.length);
+    errors.forEach(text => reporter.error(text));
+
+    expect(warns).to.be.empty;
+    expect(errors).to.be.empty;
+
+    reporter.progress('Killing the server process');
+
+    // Kill the server
+    await kill(server.ref);
+
+  });
+
+  it('should build the server for production correctly', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 10 seconds
+    this.timeout(10000);
+
+    reporter.progress('Executing "sg build --prod"');
+
+    // Execute "sg build --prod"
+    await expect(cd('test').spawn('node', [sgPath, 'build', '--prod']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking the build for minifications');
+
+    // Check main.js for no new lines (minified)
+    expect(
+      (await fs.readFile(path.join(testDir, 'test', 'dist', 'main.js'), { encoding: 'utf-8' }))
+      .match(/\n/g).length
+    ).to.be.not.greaterThan(1);
+
+    reporter.progress('Running the server');
+
+    // Run the server
+    const server = cd('test').spawn('node', [path.join('.', 'dist', 'main.js')]);
+    const logs: LogParser = new LogParserClass(server.ref);
+    const warns: string[] = [];
+    const errors: string[] = [];
+
+    // Listen to warnings and errors
+    logs.on('warn', log => warns.push(log.text));
+    logs.on('error', log => errors.push(log.text));
+
+    reporter.progress('Waiting for server to initialize');
+
+    // Wait for the startup notice
+    const notice = (await logs.next('startup', 'notice')).text;
+
+    reporter.log('Got server notice', notice);
+
+    // Expect exact port number
+    expect(notice).to.include('5001');
 
     // Expect no errors nor warnings
     reporter.log('Server warns:', warns.length);
