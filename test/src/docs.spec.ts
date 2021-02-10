@@ -126,4 +126,25 @@ describe('docs', function() {
 
   });
 
+  it('should refuse building outside of a Singular project', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 10 seconds
+    this.timeout(10000);
+
+    // Execute "sg docs"
+    reporter.progress('Executing "sg docs" command');
+
+    const child = spawn('node', [sgPath, 'docs']);
+    const errors: string[] = [];
+
+    child.ref.stderr.on('data', chunk => errors.push(chunk + ''));
+
+    await expect(child.promise).to.eventually.have.property('code', 1);
+    expect(errors).to.have.lengthOf(1);
+    expect(errors[0]).to.include('Could not locate Singular project!');
+
+  });
+
 });
