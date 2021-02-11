@@ -17,6 +17,7 @@ import './commands/add-assets';
 import './commands/remove-assets';
 import './commands/test';
 import './commands/docs';
+import './commands/info';
 
 // Set version globally on app data
 app.data<SgData>().version = require(path.resolve(__dirname, '..', 'package.json')).version;
