@@ -1,8 +1,8 @@
 import app from 'argumental';
 import chalk from 'chalk';
-import path from 'path';
 import { SgData } from '../lib/models';
 import { projectGuard } from '../lib/events';
+import { getInstalledVersion } from '../lib/packages';
 
 const logo =
 `
@@ -24,7 +24,7 @@ function resolveVersion(version: string): string {
 
   if ( ! version ) return chalk.dim('Not Installed');
 
-  return chalk.magenta(version.match(/(?<version>\d.+)$/).groups.version);
+  return chalk.magenta(version);
 
 }
 
@@ -36,15 +36,14 @@ app
 .action(async () => {
 
   const data = app.data<SgData>();
-  const packageJson = require(path.join(data.projectRoot, 'package.json'));
 
   console.log(chalk.blueBright.bold(logo));
   console.log();
   console.log(chalk.bold(`Global CLI Version:        `), resolveVersion(data.version));
   console.log(chalk.dim(separator));
-  console.log(chalk.bold(`Singular Core Module:      `), resolveVersion(packageJson.dependencies['@singular/core']));
-  console.log(chalk.bold(`Singular Validators Module:`), resolveVersion(packageJson.dependencies['@singular/validators']));
-  console.log(chalk.bold(`Singular Pipes Module:     `), resolveVersion(packageJson.dependencies['@singular/pipes']));
+  console.log(chalk.bold(`Singular Core Module:      `), resolveVersion(await getInstalledVersion(data.projectRoot, '@singular/core')));
+  console.log(chalk.bold(`Singular Validators Module:`), resolveVersion(await getInstalledVersion(data.projectRoot, '@singular/validators')));
+  console.log(chalk.bold(`Singular Pipes Module:     `), resolveVersion(await getInstalledVersion(data.projectRoot, '@singular/pipes')));
   console.log(chalk.dim(separator));
   console.log(chalk.bold(`Project Name:              `), chalk.greenBright(data.singular.project.name));
   console.log(chalk.bold(`Project Structure:         `), data.singular.project.flat ? 'Flat' : 'Default');
