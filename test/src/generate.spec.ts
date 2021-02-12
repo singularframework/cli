@@ -501,7 +501,7 @@ describe('generate', function() {
 
     expect(debugs).to.include('Router "flat-test" was initialized');
     expect(warns).to.have.lengthOf(1).and.include('Router "flat-test" has no defined routes!');
-    expect(errors).to.be.empty;
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 
@@ -591,8 +591,8 @@ describe('generate', function() {
     errors.forEach(text => reporter.error(text));
 
     expect(debugs).to.include('Service "flat-test" was initialized');
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
+    expect(warns).to.deep.equal([]);
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 
@@ -682,8 +682,8 @@ describe('generate', function() {
     errors.forEach(text => reporter.error(text));
 
     expect(debugs).to.include('Interceptor "flat-test" installed');
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
+    expect(warns).to.deep.equal([]);
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 
@@ -784,8 +784,8 @@ describe('generate', function() {
 
     expect(debugs).to.include('Plugin "flat-test" was installed');
     expect(debugs).to.include('Plugin working');
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
+    expect(warns).to.deep.equal([]);
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 

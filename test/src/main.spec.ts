@@ -13,7 +13,7 @@ import chai from 'chai';
 // Install plugin
 chai.use(chaiAsPromised);
 
-reporter.config({ logs: false, hooks: true });
+reporter.config({ logs: false, hooks: false });
 
 before('Test preparation', async function() {
 
@@ -46,6 +46,7 @@ import './build.spec';
 import './add-assets.spec';
 import './remove-assets.spec';
 import './docs.spec';
+import './test.spec';
 
 afterEach('Reporter log reset (turn off)', function() {
 
