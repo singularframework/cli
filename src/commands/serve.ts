@@ -9,7 +9,7 @@ app
 .command('serve', 'runs the server')
 .alias('s')
 
-.option('-p --profile <config_profile>', 'sets the config profile before launching the server (defaults to "dev")')
+.option('-p --profile <config_profile>', 'sets the server config profile (defaults to "dev")')
 .validate(app.STRING)
 .default('dev')
 .option('--skip-build', 'skips building the server')
