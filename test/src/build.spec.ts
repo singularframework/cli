@@ -335,7 +335,7 @@ describe('build', function() {
 
   });
 
-  it.only('should build the server in a custom directory', async function() {
+  it('should build the server in a custom directory', async function() {
 
     // reporter.config({ logs: true });
 
