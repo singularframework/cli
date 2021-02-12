@@ -9,9 +9,8 @@ app
 .command('serve', 'runs the server')
 .alias('s')
 
-.option('-p --profile <config_profile>', 'sets the server config profile (defaults to "dev")')
+.option('-p --profile <config_profile>', 'sets the server config profile')
 .validate(app.STRING)
-.default('dev')
 .option('--skip-build', 'skips building the server')
 .option('-w --watch', 'enables hot reloading')
 
@@ -24,7 +23,8 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
-  process.env.SINGULAR_CONFIG_PROFILE = opts.profile;
+  // Set config profile (if provided)
+  process.env.SINGULAR_CONFIG_PROFILE = opts.profile ?? process.env.SINGULAR_CONFIG_PROFILE;
 
   // Create server
   const server = new Server();
