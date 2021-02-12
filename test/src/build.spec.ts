@@ -335,17 +335,22 @@ describe('build', function() {
 
   });
 
-  it('should build the server in a custom directory', async function() {
+  it('should build the server correctly in a custom directory for production', async function() {
 
     // reporter.config({ logs: true });
 
     // Set timeout to 10 seconds
     this.timeout(10000);
 
-    reporter.progress('Executing "sg build --out-dir ../custom-build"');
+    reporter.progress('Removing previous builds (if any)');
 
-    // Execute "sg build --out-dir ../custom-build"
-    await expect(cd('test').spawn('node', [sgPath, 'build', '--out-dir', '../custom-build']).promise)
+    // Remove dist
+    await fs.remove(path.join(testDir, 'test', 'dist'));
+
+    reporter.progress('Executing "sg build --prod --out-dir ../custom-build"');
+
+    // Execute "sg build --prod --out-dir ../custom-build"
+    await expect(cd('test').spawn('node', [sgPath, 'build', '--prod', '--out-dir', '../custom-build']).promise)
     .to.eventually.have.property('code', 0);
 
     reporter.progress('Checking output');
