@@ -8,14 +8,15 @@ import { spawn } from './child-process';
 import { SgData } from './models';
 
 /** Builds the source code into dist. */
-export async function build(singularData: SgData, minify?: boolean, standalone?: boolean, profile?: string) {
+export async function build(singularData: SgData, minify?: boolean, standalone?: boolean, profile?: string, outDir?: string) {
 
   const spinner = new Spinner();
+  const outputDir = path.normalize(outDir ?? 'dist');
 
   // Clean up
   spinner.start('Cleaning up');
 
-  await fs.remove(path.join(singularData.projectRoot, 'dist'));
+  await fs.remove(path.join(singularData.projectRoot, outputDir));
 
   spinner.succeed();
 
@@ -27,7 +28,9 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
     [
       path.join('.', 'node_modules', 'typescript', 'bin', 'tsc'),
       '-p',
-      path.join('.', 'src', 'tsconfig.json')
+      path.join('.', 'src', 'tsconfig.json'),
+      '--outDir',
+      outputDir
     ],
     {
       windowsHide: true,
@@ -61,7 +64,7 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
 
       await fs.copy(
         path.resolve(singularData.projectRoot, 'src', asset),
-        path.resolve(singularData.projectRoot, 'dist', asset)
+        path.resolve(singularData.projectRoot, outputDir, asset)
       );
 
     }
@@ -76,20 +79,20 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
     spinner.start(`Forcing config profile "${profile}"`);
 
     // Edit main.ts (before minification)
-    const main = await fs.readFile(path.join(singularData.projectRoot, 'dist', 'main.js'), { encoding: 'utf-8' });
+    const main = await fs.readFile(path.join(singularData.projectRoot, outputDir, 'main.js'), { encoding: 'utf-8' });
     const match = main.match(/^(?<before>.+Singular\s+.*\.launch\()(?<profile>.*?)(?<after>\).+)$/s);
 
     if ( ! match ) {
 
       spinner.fail();
-      spinner.warn(`Could not update "${path.join('dist', 'main.js')}"!`);
+      spinner.warn(`Could not update "${path.join(outputDir, 'main.js')}"!`);
 
     }
     else {
 
       // Update main.js
       await fs.writeFile(
-        path.join(singularData.projectRoot, 'dist', 'main.js'),
+        path.join(singularData.projectRoot, outputDir, 'main.js'),
         match.groups.before + `'${profile}'` + match.groups.after
       );
 
@@ -115,10 +118,10 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
     };
 
     // Write new package.json
-    await fs.writeJson(path.join(singularData.projectRoot, 'dist', 'package.json'), standalonePackageJson, { spaces: 2 });
+    await fs.writeJson(path.join(singularData.projectRoot, outputDir, 'package.json'), standalonePackageJson, { spaces: 2 });
 
     // Write .gitignore
-    await fs.writeFile(path.join(singularData.projectRoot, 'dist', '.gitignore'), 'node_modules');
+    await fs.writeFile(path.join(singularData.projectRoot, outputDir, '.gitignore'), 'node_modules');
 
     spinner.succeed();
 
@@ -130,12 +133,12 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
     spinner.start('Minifying the build');
 
     // Scan for all .js files inside dist directory
-    const jsFiles = glob.sync('**/*.js', { cwd: path.resolve(singularData.projectRoot, 'dist') });
+    const jsFiles = glob.sync('**/*.js', { cwd: path.resolve(singularData.projectRoot, outputDir) });
 
     // Minify each file
     for ( const file of jsFiles ) {
 
-      const filepath = path.resolve(singularData.projectRoot, 'dist', file);
+      const filepath = path.resolve(singularData.projectRoot, outputDir, file);
       const code = await fs.readFile(filepath, { encoding: 'utf-8' });
       const results = await terser.minify(code, {
         sourceMap: { content: 'inline', url: 'inline' },
@@ -148,12 +151,12 @@ export async function build(singularData: SgData, minify?: boolean, standalone?:
     }
 
     // Scan for all .json files inside dist directory
-    const jsonFiles = glob.sync('**/*.json', { cwd: path.resolve(singularData.projectRoot, 'dist') });
+    const jsonFiles = glob.sync('**/*.json', { cwd: path.resolve(singularData.projectRoot, outputDir) });
 
     // Minify each file
     for ( const file of jsonFiles ) {
 
-      const filepath = path.resolve(singularData.projectRoot, 'dist', file);
+      const filepath = path.resolve(singularData.projectRoot, outputDir, file);
       let data = await fs.readJson(filepath, { encoding: 'utf-8' });
 
       // Further minify tsconfig.json

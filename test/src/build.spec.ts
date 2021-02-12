@@ -335,6 +335,32 @@ describe('build', function() {
 
   });
 
+  it.only('should build the server in a custom directory', async function() {
+
+    // reporter.config({ logs: true });
+
+    // Set timeout to 10 seconds
+    this.timeout(10000);
+
+    reporter.progress('Executing "sg build --out-dir ../custom-build"');
+
+    // Execute "sg build --out-dir ../custom-build"
+    await expect(cd('test').spawn('node', [sgPath, 'build', '--out-dir', '../custom-build']).promise)
+    .to.eventually.have.property('code', 0);
+
+    reporter.progress('Checking output');
+
+    // Check for .playground/custom-build/main.js
+    expect(fs.pathExists(path.join(testDir, 'custom-build', 'main.js')))
+    .to.eventually.be.true;
+
+    reporter.progress('Removing custom-build directory');
+
+    // Remove 'custom-build' directory
+    await fs.remove(path.join(testDir, 'custom-build'));
+
+  });
+
   it('should refuse building outside of a Singular project', async function() {
 
     // reporter.config({ logs: true });

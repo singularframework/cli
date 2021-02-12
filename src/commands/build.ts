@@ -12,12 +12,14 @@ app
 .option('-p --profile <config_profile>', 'forces a config profile to be used in the build')
 .validate(app.STRING)
 .option('--prod', 'shorthand for "-p prod -s -m" (overrides -p)')
+.option('-o --out-dir <path>', 'custom output directory to use (relative to project root)')
+.validate(app.STRING)
 
 // Operation can only be performed in a Singular project
 .on('actions:before', projectGuard)
 
 .actionDestruct(async ({ opts }) => {
 
-  await build(app.data<SgData>(), opts.prod || opts.minify, opts.prod || opts.standalone, opts.prod ? 'prod' : opts.profile);
+  await build(app.data<SgData>(), opts.prod || opts.minify, opts.prod || opts.standalone, opts.prod ? 'prod' : opts.profile, opts.outDir);
 
 });
