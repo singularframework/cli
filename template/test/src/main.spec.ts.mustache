@@ -28,7 +28,7 @@ before(async function() {
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
-  // Install log parser glovally
+  // Install log parser globally
   (<any>global).logs = new LogParserClass(server, profile.timezone);
 
   // Configure Got and inject the instance globally
