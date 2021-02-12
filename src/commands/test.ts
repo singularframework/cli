@@ -14,7 +14,6 @@ app
 .option('--skip-build', 'skips building the test files')
 .option('--skip-server-build', 'skips building the server source files')
 .option('-d --dry-run', 'shorthand for --skip-build and --skip-server-build')
-.option('-m --minify', 'minifies the server build')
 .option('-p --profile <config_profile>', 'sets the config profile before launching the server (defaults to "test")')
 .validate(app.STRING)
 
@@ -36,7 +35,7 @@ app
   // Build the server
   if ( ! opts.skipServerBuild && ! opts.dryRun ) {
 
-    await build(app.data<SgData>(), opts.minify);
+    await build(app.data<SgData>());
 
   }
 
