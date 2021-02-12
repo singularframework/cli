@@ -11,10 +11,9 @@ app
 
 .option('-p --profile <config_profile>', 'sets the config profile before launching the server (defaults to "dev")')
 .validate(app.STRING)
-.option('--prod', 'shorthand for "-p prod" (will be ignored if -p is provided)')
+.default('dev')
 .option('--skip-build', 'skips building the server')
 .option('-w --watch', 'enables hot reloading')
-.option('-m --minify', 'minifies the build (if not skipped)')
 
 // Operation can only be performed in a Singular project (only when --skip-build is not provided)
 .on('actions:before', data => {
@@ -25,20 +24,13 @@ app
 
 .actionDestruct(async ({ opts }) => {
 
-  // Set config profile
-  if ( ! opts.profile && opts.prod ) opts.profile = 'prod';
-  // Default to dev
-  else if ( ! opts.profile ) opts.profile = 'dev';
-
   process.env.SINGULAR_CONFIG_PROFILE = opts.profile;
 
   // Create server
   const server = new Server();
 
-  server.minify = opts.minify;
-
   // Build the server if asked
-  if ( ! opts.skipBuild ) await server.build(app.data<SgData>(), opts.minify);
+  if ( ! opts.skipBuild ) await server.build(app.data<SgData>());
 
   // Launch the server
   server.launch();

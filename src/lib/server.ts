@@ -12,8 +12,6 @@ export class Server {
   private _reloading: boolean = false;
   private _needsNewReload: boolean = false;
 
-  public minify: boolean = false;
-
   get build() { return build; }
 
   kill(): Promise<void> {
@@ -76,7 +74,7 @@ export class Server {
 
       app.data<SgData>().singular = await fs.readJson(path.join(app.data<SgData>().projectRoot, 'singular.json'));
 
-      await this.build(app.data<SgData>(), this.minify);
+      await this.build(app.data<SgData>());
 
     }
 
