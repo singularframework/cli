@@ -1,6 +1,6 @@
 # Singular CLI
 
-This package contains the CLI app for [Singular framework](https://singularframework.com).
+This package contains the command line interface (CLI) for [Singular framework](https://singularframework.com).
 
 ```bash
 npm install @singular/cli -g
