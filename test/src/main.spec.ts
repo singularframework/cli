@@ -47,6 +47,7 @@ import './add-assets.spec';
 import './remove-assets.spec';
 import './docs.spec';
 import './test.spec';
+import './serve.spec';
 
 afterEach('Reporter log reset (turn off)', function() {
 
