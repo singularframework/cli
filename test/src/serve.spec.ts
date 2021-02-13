@@ -236,7 +236,7 @@ describe('serve', function() {
       "import {Service} from '@singular/core';\n" +
       "@Service({name:'test'})\n" +
       "export class TestService {" +
-      "onInit() { log.info('TEST_SERVICE_INIT_V1'); }\n" +
+      "onInit() { log.debug('TEST_SERVICE_INIT_V1'); }\n" +
       "}"
     );
 
@@ -244,17 +244,15 @@ describe('serve', function() {
 
     // Execute "sg serve --watch"
     const server = cd('test').spawn('node', [sgPath, 'serve', '--watch']);
-    const logs: LogParser = new LogParserClass(server.ref);
+    let logs: LogParser = new LogParserClass(server.ref);
     let warns: string[] = [];
     let errors: string[] = [];
     let debugs: string[] = [];
-    let infos: string[] = [];
 
     // Listen to warnings and errors
     logs.on('warn', log => warns.push(log.text));
     logs.on('error', log => errors.push(log.text));
     logs.on('debug', log => debugs.push(log.text));
-    logs.on('info', log => infos.push(log.text));
 
     reporter.progress('Waiting for server to initialize');
 
@@ -273,19 +271,15 @@ describe('serve', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    reporter.log('Server infos:', infos.length);
-    infos.forEach(text => reporter.log(text));
-
     expect(warns).to.deep.equal([]);
     expect(errors).to.deep.equal([]);
     expect(notice).to.include('port 5000');
-    expect(infos).to.include('TEST_SERVICE_INIT_V1');
+    expect(debugs.join('\n')).to.include('TEST_SERVICE_INIT_V1');
 
     // Reset logs
     warns = [];
     errors = [];
     debugs = [];
-    infos = [];
     notice = null;
 
     reporter.progress('Changing test service');
@@ -313,13 +307,10 @@ describe('serve', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    reporter.log('Server infos:', infos.length);
-    infos.forEach(text => reporter.log(text));
-
     expect(warns).to.deep.equal([]);
     expect(errors).to.deep.equal([]);
     expect(notice).to.include('port 5000');
-    expect(infos).to.include('TEST_SERVICE_INIT_V2');
+    expect(debugs.join('\n')).to.include('TEST_SERVICE_INIT_V2');
 
     reporter.progress('Killing the server process');
 

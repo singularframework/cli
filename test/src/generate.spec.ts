@@ -129,9 +129,9 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Router "test" was initialized');
+    expect(debugs.join('\n')).to.include('Router "test" was initialized');
     expect(warns).to.have.lengthOf(1).and.include('Router "test" has no defined routes!');
-    expect(errors).to.be.empty;
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 
@@ -216,9 +216,9 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Service "test" was initialized');
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
+    expect(debugs.join('\n')).to.include('Service "test" was initialized');
+    expect(warns).to.deep.equal([]);
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 
@@ -303,9 +303,9 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Interceptor "test" installed');
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
+    expect(debugs.join('\n')).to.include('Interceptor "test" installed');
+    expect(warns).to.deep.equal([]);
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 
@@ -400,10 +400,10 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Plugin "test" was installed');
-    expect(debugs).to.include('Plugin working');
-    expect(warns).to.be.empty;
-    expect(errors).to.be.empty;
+    expect(debugs.join('\n')).to.include('Plugin "test" was installed');
+    expect(debugs.join('\n')).to.include('Plugin working');
+    expect(warns).to.deep.equal([]);
+    expect(errors).to.deep.equal([]);
 
     reporter.progress('Killing the server process');
 
@@ -499,7 +499,7 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Router "flat-test" was initialized');
+    expect(debugs.join('\n')).to.include('Router "flat-test" was initialized');
     expect(warns).to.have.lengthOf(1).and.include('Router "flat-test" has no defined routes!');
     expect(errors).to.deep.equal([]);
 
@@ -590,7 +590,7 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Service "flat-test" was initialized');
+    expect(debugs.join('\n')).to.include('Service "flat-test" was initialized');
     expect(warns).to.deep.equal([]);
     expect(errors).to.deep.equal([]);
 
@@ -681,7 +681,7 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Interceptor "flat-test" installed');
+    expect(debugs.join('\n')).to.include('Interceptor "flat-test" installed');
     expect(warns).to.deep.equal([]);
     expect(errors).to.deep.equal([]);
 
@@ -782,8 +782,8 @@ describe('generate', function() {
     reporter.log('Server errors:', errors.length);
     errors.forEach(text => reporter.error(text));
 
-    expect(debugs).to.include('Plugin "flat-test" was installed');
-    expect(debugs).to.include('Plugin working');
+    expect(debugs.join('\n')).to.include('Plugin "flat-test" was installed');
+    expect(debugs.join('\n')).to.include('Plugin working');
     expect(warns).to.deep.equal([]);
     expect(errors).to.deep.equal([]);
 
