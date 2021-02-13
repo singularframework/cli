@@ -13,9 +13,11 @@ import chai from 'chai';
 // Install plugin
 chai.use(chaiAsPromised);
 
-reporter.config({ logs: false, hooks: false });
+reporter.config({ logs: false, hooks: true });
 
 before('Test preparation', async function() {
+
+  this.timeout(5000);
 
   reporter.log('Setting globals');
 
@@ -48,6 +50,7 @@ import './remove-assets.spec';
 import './docs.spec';
 import './test.spec';
 import './serve.spec';
+import './upgrade.spec';
 
 afterEach('Reporter log reset (turn off)', function() {
 
@@ -58,6 +61,9 @@ afterEach('Reporter log reset (turn off)', function() {
 });
 
 afterEach('Test case cleanup (kill remaining processes)', async function() {
+
+  // Skip this mechanism for the upgrade test suite
+  if ( this.currentTest.parent.title === 'upgrade' ) return;
 
   reporter.log('Killing all remaining processes if left over');
 
