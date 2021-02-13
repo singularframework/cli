@@ -51,6 +51,7 @@ import './docs.spec';
 import './test.spec';
 import './serve.spec';
 import './upgrade.spec';
+import './version-control.spec';
 
 afterEach('Reporter log reset (turn off)', function() {
 
@@ -62,8 +63,8 @@ afterEach('Reporter log reset (turn off)', function() {
 
 afterEach('Test case cleanup (kill remaining processes)', async function() {
 
-  // Skip this mechanism for the upgrade test suite
-  if ( this.currentTest.parent.title === 'upgrade' ) return;
+  // Skip this mechanism for the specified test suites
+  if ( ['upgrade', 'version control'].includes(this.currentTest.parent.title) ) return;
 
   reporter.log('Killing all remaining processes if left over');
 
