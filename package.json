@@ -1,6 +1,6 @@
 {
   "name": "@singular/cli",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Singular framework command line interface for project management",
   "main": "bin/sg.js",
   "bin": {
