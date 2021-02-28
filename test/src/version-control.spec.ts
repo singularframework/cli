@@ -3,7 +3,12 @@ import { expect } from 'chai';
 import path from 'path';
 import fs from 'fs-extra';
 
-describe('version control', function() {
+/************************** DANGER **************************/
+/* .npmrc is not being recognized by npm in all repos! */
+/* This led to decoy packages being published on the actual npm repository!!! */
+/* This was fixed by providing --registry directly with npm commands;
+   However, Singular CLI commands fail because they use npm which still doesn't recognize .npmrc! */
+describe.skip('version control', function() {
 
   /** Path to verdaccio executable. */
   let verdaccioPath: string;

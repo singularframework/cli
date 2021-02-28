@@ -24,7 +24,7 @@ app
 .actionDestruct(async ({ opts }) => {
 
   // Set config profile (if provided)
-  process.env.SINGULAR_CONFIG_PROFILE = opts.profile ?? process.env.SINGULAR_CONFIG_PROFILE;
+  process.env.SINGULAR_CONFIG_PROFILE = opts.profile || process.env.SINGULAR_CONFIG_PROFILE || 'dev';
 
   // Create server
   const server = new Server();

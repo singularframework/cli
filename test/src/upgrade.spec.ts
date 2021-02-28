@@ -3,7 +3,12 @@ import path from 'path';
 import fs from 'fs-extra';
 import { ChildProcess } from 'child_process';
 
-describe('upgrade', function() {
+/************************** DANGER **************************/
+/* .npmrc is not being recognized by npm in all repos! */
+/* This led to decoy packages being published on the actual npm repository!!! */
+/* This was fixed by providing --registry directly with npm commands;
+   However, Singular CLI commands fail because they use npm which still doesn't recognize .npmrc! */
+describe.skip('upgrade', function() {
 
   /** Path to verdaccio executable. */
   let verdaccioPath: string;
@@ -36,6 +41,23 @@ describe('upgrade', function() {
 
     await expect(cd('verdaccio').spawn('npm', ['init', '-y']).promise)
     .to.eventually.have.property('code', 0);
+
+    // Rename verdaccio package
+    await fs.writeJson(
+      path.join(testDir, 'verdaccio', 'package.json'),
+      {
+        ...fs.readJson(path.join(testDir, 'verdaccio', 'package.json')),
+        name: 'verdaccio-local'
+      }
+    );
+
+    await fs.writeJson(
+      path.join(testDir, 'verdaccio', 'package-lock.json'),
+      {
+        ...fs.readJson(path.join(testDir, 'verdaccio', 'package-lock.json')),
+        name: 'verdaccio-local'
+      }
+    );
 
     await expect(cd('verdaccio').spawn('npm', ['install', 'verdaccio']).promise)
     .to.eventually.have.property('code', 0);
@@ -110,7 +132,7 @@ describe('upgrade', function() {
     // Publish decoys version 1.0.0
     for ( const decoy of decoys ) {
 
-      await expect(cd(decoy.dirname).spawn('npm', ['publish']).promise)
+      await expect(cd(decoy.dirname).spawn('npm', ['publish', '--registry=http://localhost:7003']).promise)
       .to.eventually.have.property('code', 0);
 
     }
@@ -278,7 +300,7 @@ describe('upgrade', function() {
     await expect(cd('core-decoy').spawn('npm', ['version', '1.5.2']).promise)
     .to.eventually.have.property('code', 0);
 
-    await expect(cd('core-decoy').spawn('npm', ['publish']).promise)
+    await expect(cd('core-decoy').spawn('npm', ['publish', '--registry=http://localhost:7003']).promise)
     .to.eventually.have.property('code', 0);
 
     reporter.progress('Publishing @singular/pipes decoy with version 1.0.4');
@@ -287,7 +309,7 @@ describe('upgrade', function() {
     await expect(cd('pipes-decoy').spawn('npm', ['version', '1.0.4']).promise)
     .to.eventually.have.property('code', 0);
 
-    await expect(cd('pipes-decoy').spawn('npm', ['publish']).promise)
+    await expect(cd('pipes-decoy').spawn('npm', ['publish', '--registry=http://localhost:7003']).promise)
     .to.eventually.have.property('code', 0);
 
     reporter.progress('Executing "sg upgrade"');
@@ -325,7 +347,7 @@ describe('upgrade', function() {
       await expect(cd(dirname).spawn('npm', ['version', version]).promise)
       .to.eventually.have.property('code', 0);
 
-      await expect(cd(dirname).spawn('npm', ['publish']).promise)
+      await expect(cd(dirname).spawn('npm', ['publish', '--registry=http://localhost:7003']).promise)
       .to.eventually.have.property('code', 0);
 
     }

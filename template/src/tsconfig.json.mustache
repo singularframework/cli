@@ -19,8 +19,11 @@
       "es2018"
     ],
     "paths": {
-      "@{{{projectName}}}/services/*": ["./{{{servicePathPrefix}}}*.service"],
-      "@{{{projectName}}}/config": ["./server.config.json"]
+      "@{{{projectName}}}/service/*": ["./{{{servicePathPrefix}}}*.service"],
+      "@{{{projectName}}}/router/*": ["./{{{routerPathPrefix}}}*.router"],
+      "@{{{projectName}}}/interceptor/*": ["./{{{interceptorPathPrefix}}}*.interceptor"],
+      "@{{{projectName}}}/plugin/*": ["./{{{pluginPathPrefix}}}*.plugin"],
+      "@{{{projectName}}}/config": ["./server.config"]
     }
   }
 }

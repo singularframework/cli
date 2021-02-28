@@ -88,7 +88,10 @@ app
   );
   const tsconfig = mustache.render(tsconfigTemplate, {
     projectName: args.name,
-    servicePathPrefix: opts.flat ? '' : 'services/'
+    servicePathPrefix: opts.flat ? '' : 'services/',
+    routerPathPrefix: opts.flat ? '' : 'routers/',
+    interceptorPathPrefix: opts.flat ? '' : 'interceptors/',
+    pluginPathPrefix: opts.flat ? '' : 'plugins/'
   });
 
   await fs.writeFile(path.resolve(process.cwd(), args.name, 'src', 'tsconfig.json'), tsconfig);

@@ -63,7 +63,7 @@ app
   const pluginInstallSyntax = `.install(${pluginClassName})\n`;
   const updatedMain = main
   .replace(
-    /^(.*import[^;]+?from[^;]+?;(?!.*import))(.*Singular[^;]*)(\.launch\(\).*)/s,
+    /^(.*import[^;]+?from[^;]+?;(?!.*import))(.*Singular[^;]*)(\.launch\(.*?\).*)/s,
     `$1${pluginImportSyntax}$2${pluginInstallSyntax}$3`
   );
 
